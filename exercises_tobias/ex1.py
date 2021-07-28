@@ -46,7 +46,7 @@ class Fibonacci:
     def next(self):
         output = self.first
         self.first = self.second
-        self.second += output
+        self.second += output 
         return output
 
 
@@ -58,6 +58,7 @@ def fibonacci(a, b):
         a, b = b, a+b
 
 if __name__ == "__main__":
+    pass
     # print(task1([1, 2, 3, 4, 5, 6, 7], 3))
     # print(task2([1, 2, 3], 4))
     # print(task3([1, 2, 3, 4]))

@@ -1,8 +1,6 @@
 import unittest
 
-import sys
-sys.path.insert(0, "C:/Users/tobia/Documents/Host2021/IN-STK5000/IN-STK5000/exercises_tobias")
-import ex1 as ex1_solution
+import ex1_solution
 
 class TestEx1(unittest.TestCase):
 
@@ -17,7 +15,7 @@ class TestEx1(unittest.TestCase):
         for n, item in enumerate(l):
             self.assertEqual(ex1_solution.task2(l, n), item)
         self.assertEqual(ex1_solution.task2(l, len(l)), None)
-
+    
     def test_task3(self):
 
         self.assertEqual(ex1_solution.task3(list("abcd")),
@@ -43,3 +41,5 @@ class TestEx1(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+        

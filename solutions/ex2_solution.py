@@ -43,12 +43,12 @@ class Ex2:
         planets."""
 
         return self.planets.loc['Mass (10e24kg)']
-        
+
     def task5(self):
 
         """Return a dataframe containing the mass, diameter, and density of
         Mercury and Venus, accessing the data by label."""
-        
+
         return self.planets.loc['Mass (10e24kg)':'Density (kg/m3)',
                                 'MERCURY':'VENUS']
 
@@ -56,7 +56,7 @@ class Ex2:
 
         """Return a dataframe containing the diameter, density, and gravity of
         Mercury and Mars, accessing the data by position."""
-        
+
         return self.planets.iloc[1:4,[0, 3]]
 
     def task6(self):
@@ -67,7 +67,7 @@ class Ex2:
           v_e = sqrt(2 * G * M / r),
 
         where G is the gravitational constant. You can use self.G to
-        access it. More informaiton can be found at 
+        access it. More informaiton can be found at
         https://en.wikipedia.org/wiki/Escape_velocity.
 
         Write a method to calculate the escape velocity and return it
@@ -88,13 +88,13 @@ class Ex2:
 
         # Differences can come from how diameter/radius is measured,
         # planets are not perfect spheres.
-        
+
         return np.sqrt(
             self.G
             * self.planets.loc['Mass (10e24kg)'] * 1e24
             / self.planets.loc['Diameter (km)'] / 1000 * 4
         ) / 1000 - self.planets.loc['Escape Velocity (km/s)']
-    
+
     def task7(self):
 
         """Use the given dictionary to create a data frame containing
@@ -111,10 +111,10 @@ class Ex2:
                       'Density (kg/m3)': 687,
                       'Gravity (m/s2)': 9.0,
                       'Escape Velocity (km/s)': 35.5}}
-        
+
         right = pd.DataFrame(jus_data)
         return self.planets.join(right)
-        
+
     def task8(self):
 
         """Use the information about the number of moons given in the dictionary
@@ -130,7 +130,7 @@ class Ex2:
 
     def task8_1(self):
 
-        """Appending the moons data leaves NaN values in the data frame. Drop 
+        """Appending the moons data leaves NaN values in the data frame. Drop
         those and return the resultng dataframe."""
 
         return self.task8().dropna()
@@ -142,3 +142,7 @@ class Ex2:
         with 0 and return the resulting dataframe."""
 
         return self.task8().fillna(0)
+
+if __name__ == "__main__":
+    Test = Ex2()
+    print(Test.task1())
