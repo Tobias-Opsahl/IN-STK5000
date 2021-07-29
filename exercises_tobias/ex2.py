@@ -9,9 +9,8 @@ class Ex2:
     completed. You will have to write the code to complete the
     others. The data set is loaded for you, no need to do anything
     with this."""
-
-    planets = pd.read_csv("C:/Users/tobia/Documents/Host2021/IN-STK5000/IN-STK5000/data/inner_planets.csv",
-                                index_col=0)
+    planets = pd.read_csv("C:/Users/tobia/Documents/Dokumenter_Backup/Host_2021/IN-STK5000/data/inner_planets.csv", index_col=0)
+    # planets = pd.read_csv("C:/Users/tobia/Documents/Host2021/IN-STK5000/IN-STK5000/data/inner_planets.csv", index_col=0)
     G = 6.67E-11
 
     def task1(self):
@@ -75,7 +74,11 @@ class Ex2:
         in a series, with the planet names as index.
         """
 
-        pass
+        v_e = np.sqrt(
+            self.G * 4
+            * self.planets.loc["Mass (10e24kg)"] * 1e24
+            / (self.planets.loc["Diameter (km)"] * 1000)) / 1000
+        return v_e
 
     def task6_1(self):
 
@@ -84,7 +87,7 @@ class Ex2:
         do you think there is such a difference?"""
 
 
-        pass
+        return self.task6() - self.planets.loc["Escape Velocity (km/s)"]
 
     def task7(self):
 
@@ -103,6 +106,8 @@ class Ex2:
                       'Gravity (m/s2)': 9.0,
                       'Escape Velocity (km/s)': 35.5}}
 
+        right = pd.DataFrame(jus_data)
+        return self.planets.join(right)
 
     def task8(self):
 
@@ -114,13 +119,15 @@ class Ex2:
                  "VENUS": {"Moons": None},
                  "EARTH": {"Moons": 1},
                  "MARS": {"Moons": 2}}
+        df = pd.DataFrame(moons)
+        return self.planets.append(df)
 
     def task8_1(self):
 
         """Appending the moons data leaves NaN values in the data frame. Drop
         those and return the resulting dataframe."""
 
-        pass
+        return self.task8().dropna(axis=0)
 
     def task8_2(self):
 
@@ -128,12 +135,12 @@ class Ex2:
         context, NaN actually means 'no moons'. Thus replace those NaN values
         with 0 and return the resulting dataframe."""
 
-        pass
+        return self.task8().fillna(0)
 
 if __name__ == "__main__":
     Test = Ex2()
     # print(Test.planets)
-    print(Test.task5_1())
+    print(Test.task8_1())
 
 #                             MERCURY     VENUS     EARTH      MARS
 # Mass (10e24kg)             0.33      4.87      5.97     0.642
