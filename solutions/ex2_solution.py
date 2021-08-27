@@ -145,4 +145,4 @@ class Ex2:
 
 if __name__ == "__main__":
     Test = Ex2()
-    print(Test.task1())
+    print(Test.task6())
