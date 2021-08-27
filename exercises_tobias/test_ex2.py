@@ -3,7 +3,7 @@ import unittest.mock
 import pandas as pd
 import sys
 
-sys.path.insert(0, "C:/Users/tobia/Documents/Host2021/IN-STK5000/IN-STK5000/exercises_tobias")
+# sys.path.insert(0, "C:/Users/tobia/Documents/Host2021/IN-STK5000/IN-STK5000/exercises_tobias")
 from ex2 import Ex2
 # from ex2_solution import Ex2
 # import ex2 as ex2_solution

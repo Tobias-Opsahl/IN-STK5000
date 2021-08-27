@@ -9,8 +9,8 @@ class Ex2:
     completed. You will have to write the code to complete the
     others. The data set is loaded for you, no need to do anything
     with this."""
-    planets = pd.read_csv("C:/Users/tobia/Documents/Dokumenter_Backup/Host_2021/IN-STK5000/data/inner_planets.csv", index_col=0)
-    # planets = pd.read_csv("C:/Users/tobia/Documents/Host2021/IN-STK5000/IN-STK5000/data/inner_planets.csv", index_col=0)
+    # planets = pd.read_csv("C:/Users/tobia/Documents/Dokumenter_Backup/Host_2021/IN-STK5000/data/inner_planets.csv", index_col=0)
+    planets = pd.read_csv("C:/Users/tobia/Documents/Host2021/IN-STK5000/IN-STK5000/data/inner_planets.csv", index_col=0)
     G = 6.67E-11
 
     def task1(self):
