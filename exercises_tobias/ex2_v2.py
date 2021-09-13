@@ -128,7 +128,7 @@ class Ex2:
         """Appending the moons data leaves NaN values in the data frame. Drop 
         those and return the resulting dataframe."""
 
-        return self.task8().dropna(axis=1)
+        return self.task8().dropna(axis=0)
 
     def task8_2(self):
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     # print(Test.planets)
     # Test.task7()
     # Test.task8()
-    print(Test.task8_2())
+    print(Test.task8_1())
 
 #                             MERCURY     VENUS     EARTH      MARS
 # Mass (10e24kg)             0.33      4.87      5.97     0.642

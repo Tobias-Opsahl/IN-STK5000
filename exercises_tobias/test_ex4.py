@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 
-from ex4_solution import Ex4
+from ex4 import Ex4
 
 
 class TextEx3(unittest.TestCase):

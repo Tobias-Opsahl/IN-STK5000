@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 
-from ex3_solution import Ex3
+from ex3 import Ex3
 
 class TextEx3(unittest.TestCase):
 
