@@ -12,7 +12,7 @@ class Ex5:
     data set is loaded for you, no need to do anything with this.
     """
 
-    d = pd.read_csv("diamonds.csv.gz")
+    d = pd.read_csv("C:/Users/tobia/Documents/Host2021/IN-STK5000/IN-STK5000/data/diamonds.csv.gz")
 
     def task1(self, max_depth):
         
@@ -100,3 +100,7 @@ class Ex5:
 
         return GridSearchCV(self.task1(5), param_grid, cv=5, scoring='r2')\
             .fit(self.d[f_cols], self.d[t_col])
+
+if __name__ == "__main__":
+    test = Ex5()
+    print(test.task1(5))
