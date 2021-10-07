@@ -29,10 +29,15 @@ def init_features(data):
     features_data = pd.read_csv(data)
     # features =  ["Covid-Recovered", "Age", "Gender", "Income", "Genome", "Comorbidities", "Vaccination status"]
     features = []
-    features += ["Symptoms" + str(i) for i in range(1, 11)]
+    # features += ["Symptoms" + str(i) for i in range(1, 11)]
+    features += ["Covid-Recovered", "Covid-Positive", "No-Taste/Smell", "Fever", 
+                 "Headache", "Pneumonia", "Stomach", "Myocarditis", 
+                 "Blood-Clots", "Death"]
     features += ["Age", "Gender", "Income"]
     features += ["Genome" + str(i) for i in range(1, 129)]
-    features += ["Comorbidities" + str(i) for i in range(1, 7)]
+    # features += ["Comorbidities" + str(i) for i in range(1, 7)]
+    features += ["Asthma", "Obesity", "Smoking", "Diabetes", 
+                 "Heart disease", "Hypertension"]
     features += ["Vaccination status" + str(i) for i in range(1, 4)]
     features_data.columns = features
     return features_data
@@ -59,6 +64,6 @@ def init_outcomes():
 
 # actions = init_actions()
 # outcomes = init_outcomes()
-# observation_features = init_features("observation_features.csv")
 # treatment_features = init_features("treatment_features.csv")
+# observation_features = init_features("observation_features.csv")
 
