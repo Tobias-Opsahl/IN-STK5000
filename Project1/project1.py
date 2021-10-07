@@ -29,7 +29,7 @@ def init_features(data):
     features_data = pd.read_csv(data)
     # features =  ["Covid-Recovered", "Age", "Gender", "Income", "Genome", "Comorbidities", "Vaccination status"]
     features = []
-    features += ["Covid-Recovered" + str(i) for i in range(1, 11)]
+    features += ["Symptoms" + str(i) for i in range(1, 11)]
     features += ["Age", "Gender", "Income"]
     features += ["Genome" + str(i) for i in range(1, 129)]
     features += ["Comorbidities" + str(i) for i in range(1, 7)]
