@@ -57,8 +57,8 @@ def init_outcomes():
     outcomes.columns = outcome_names
     return outcomes
 
-actions = init_actions()
-outcomes = init_outcomes()
-observation_features = init_features("observation_features.csv")
-treatment_features = init_features("treatment_features.csv")
-embed()
+# actions = init_actions()
+# outcomes = init_outcomes()
+# observation_features = init_features("observation_features.csv")
+# treatment_features = init_features("treatment_features.csv")
+
