@@ -50,7 +50,12 @@ def correlated_categorical_data(num_col, c, num_samples):
     return response, data
             
 def correlated_categorical_data2(num_col, c, num_samples):
-    prob = 0.90
+    """
+    Create correlated data. The "num_col" explanatory vairables are totally 
+    random, between 0 and 1. Then the response is 1 if the first c columns
+    have a sum bigger than 0.5, if not 0. 
+    """
+    prob = 1
     response = np.random.randint(2, size=num_samples)
     data = np.zeros((num_samples, num_col))
     for i in range(num_col):
@@ -61,10 +66,12 @@ def correlated_categorical_data2(num_col, c, num_samples):
             if coin_flip < prob: 
                 response[i] = 1
             else: 
-                response[i] = np.random.randint(2)
+                response[i] = 0
+                # response[i] = np.random.randint(2)
         else:
             # response[i] = 0   
-            response[i] = np.random.randint(2)
+            response[i] = 0
+            # response[i] = np.random.randint(2)
         
     data = pd.DataFrame(data)
     return response, data  
@@ -94,11 +101,12 @@ def plot_3d(mean, y):
     plt.grid(True)
     plt.show()
 
-response, data = correlated_categorical_data2(128, 10, 100)
-print(data)
-print(response)    
+response, data = correlated_categorical_data2(128, 3, 100)
+# print(data)
+# print(response)    
+print(np.matrix(data)[1, :10])
 
-x_new = SelectPercentile(chi2, percentile=10).fit_transform(data, response)
+x_new = SelectPercentile(chi2, percentile=5).fit_transform(data, response)
 print(x_new)
 print(data.shape)
 print(x_new.shape)

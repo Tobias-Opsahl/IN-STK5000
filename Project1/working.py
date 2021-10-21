@@ -21,16 +21,17 @@ symptoms = data.iloc[:, :10]
 # x_data = genomes.join(age).join(comorbidities)
 x_data = genomes
 y_data = symptoms[["Death"]]
-
-# Get summary of model 
-linear = LinearRegression().fit(x_data, y_data)
-lasso = Lasso().fit(x_data, y_data)
-X2 = sm.add_constant(x_data)
-est = sm.OLS(y_data, X2)
-est2 = est.fit()
-print(est2.summary())
-
-print(genomes)
+embed()
+print(y_data.values)
+# # Get summary of model 
+# linear = LinearRegression().fit(x_data, y_data)
+# lasso = Lasso().fit(x_data, y_data)
+# X2 = sm.add_constant(x_data)
+# est = sm.OLS(y_data, X2)
+# est2 = est.fit()
+# print(est2.summary())
+# 
+# print(genomes)
 
 # 
 # num_samples = 400
