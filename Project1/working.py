@@ -83,32 +83,10 @@ print(f"Death: Vaccinated: {len(death_any)/len(any_vaccine)*100:.4f}, not vaccin
 # Z = (mu_1 - mu_2 - D)/ sqrt(sd_1/n_1 + sd_2/n_2)
 
 # The z values for hypothesis testing
+fever_p = (len(fever_any) + len(fever_no))/(len(no_vaccine) + len(any_vaccine))
 fever_z = (len(fever_any)/len(any_vaccine) - len(fever_no)/len(no_vaccine)) / \
-          (np.sqrt(np.std(any_vaccine["Fever"])/len(any_vaccine) 
-            + np.std(no_vaccine["Fever"])/len(no_vaccine)))
+          (np.sqrt(((1/len(any_vaccine) + (1/len(no_vaccine))) * fever_p * (1-fever_p))))
 # print(f"fever_z: {fever_z}")
-
-taste_z = (len(taste_any)/len(any_vaccine) - len(taste_no)/len(no_vaccine)) / \
-          (np.sqrt(np.std(any_vaccine['No-Taste/Smell'])/len(any_vaccine) 
-            + np.std(no_vaccine['No-Taste/Smell'])/len(no_vaccine)))
-headache_z = (len(headache_any)/len(any_vaccine) - len(headache_no)/len(no_vaccine)) / \
-          (np.sqrt(np.std(any_vaccine["Headache"])/len(any_vaccine) 
-            + np.std(no_vaccine["Headache"])/len(no_vaccine)))
-pneumonia_z = (len(pneumonia_any)/len(any_vaccine) - len(pneumonia_no)/len(no_vaccine)) / \
-          (np.sqrt(np.std(any_vaccine['Pneumonia'])/len(any_vaccine) 
-            + np.std(no_vaccine['Pneumonia'])/len(no_vaccine)))
-stomach_z = (len(stomach_any)/len(any_vaccine) - len(stomach_no)/len(no_vaccine)) / \
-          (np.sqrt(np.std(any_vaccine["Stomach"])/len(any_vaccine) 
-            + np.std(no_vaccine["Stomach"])/len(no_vaccine)))
-myo_z = (len(myo_any)/len(any_vaccine) - len(myo_no)/len(no_vaccine)) / \
-          (np.sqrt(np.std(any_vaccine['Myocarditis'])/len(any_vaccine) 
-            + np.std(no_vaccine['Myocarditis'])/len(no_vaccine)))
-blood_z = (len(blood_any)/len(any_vaccine) - len(blood_no)/len(no_vaccine)) / \
-          (np.sqrt(np.std(any_vaccine['Blood-Clots'])/len(any_vaccine) 
-            + np.std(no_vaccine['Blood-Clots'])/len(no_vaccine)))
-# death_z = (len(death_any)/len(any_vaccine) - len(death_no)/len(no_vaccine)) / \
-#           (np.sqrt(np.std(any_vaccine["Death"])/len(any_vaccine) 
-#             + np.std(no_vaccine["Death"])/len(no_vaccine)))
 # embed()        
 # Deaths
 vac1_dead_ratio = sum(vaccine1["Death"] == 1)/len(vaccine1)
