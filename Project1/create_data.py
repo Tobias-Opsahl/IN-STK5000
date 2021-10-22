@@ -8,7 +8,7 @@ np.random.seed(57)
 
 # plt.show()
 
-def correlated__normal_data(n, c, num_samples):
+def correlated_normal_data(n, c, num_samples):
     """
     n: Dimension of covariance matrix. 
     c: Number of correlated columns
@@ -101,15 +101,17 @@ def plot_3d(mean, y):
     plt.grid(True)
     plt.show()
 
-response, data = correlated_categorical_data2(128, 3, 100)
-# print(data)
-# print(response)    
-print(np.matrix(data)[1, :10])
-
-x_new = SelectPercentile(chi2, percentile=5).fit_transform(data, response)
-print(x_new)
-print(data.shape)
-print(x_new.shape)
+def create_correlated_data(num_col, num_cor, num_row):
+    pass
+# response, data = correlated_categorical_data2(128, 3, 100)
+# # print(data)
+# # print(response)    
+# print(np.matrix(data)[1, :10])
+# 
+# x_new = SelectPercentile(chi2, percentile=5).fit_transform(data, response)
+# print(x_new)
+# print(data.shape)
+# print(x_new.shape)
 # mean, cov_matrix, y = correlated_data(5, 3, 1000)
 # print(y.shape)
 # print(y)

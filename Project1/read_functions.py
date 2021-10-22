@@ -67,3 +67,8 @@ def init_outcomes():
 # treatment_features = init_features("treatment_features.csv")
 # observation_features = init_features("observation_features.csv")
 
+# genomes = data.iloc[:, 13:141] # Columns corresponding to Genomes
+# age = data.iloc[:, 10] # Age
+# comorbidities = data.iloc[:, 141:147] # All of comorbidities
+# symptoms = data.iloc[:, :10]
+# vaccines = data.iloc[:, -3:]
