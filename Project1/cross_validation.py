@@ -5,6 +5,7 @@ import pandas as pd
 from IPython import embed
 from read_functions import *
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import Lasso
 
 observation_features = init_features("observation_features.csv")
 data_obs = observation_features
@@ -21,6 +22,14 @@ treatment = data_treat.join(actions).join(outcomes)
 treat_no_genes1 = treatment.iloc[:, 0:13]
 treat_no_genes2 = treatment.iloc[:, 141:]
 treat_no_genes = treat_no_genes1.join(treat_no_genes2)
+
+num_features = ["Age", "Income"]
+num_df = treat_no_genes[num_features]
+scaled_num_df = (num_df - num_df.mean()) / num_df.std()
+
+treat_no_genes_scaled = treat_no_genes
+treat_no_genes_scaled.iloc[:, 10] = scaled_num_df.iloc[:,0]
+treat_no_genes_scaled.iloc[:, 12] = scaled_num_df.iloc[:,1]
 
 data = treat_no_genes
 # Cross validation
@@ -92,5 +101,24 @@ def knn_model(data, test, response, parameter1=5):
     predictions = fit_model.predict(test_data)
     return predictions
 
-cross_validate(data, knn_model, zero_one_penalty, "Death_after", parameter1=10)
-embed()
+def lasso_model(data, test, response, parameter1=1):
+    """
+    parameter1 is lambda. Lasso model for cross_validate()
+    """
+    alpha = parameter1
+    y_data = data[response]
+    x_data = data.drop(columns=[response]) # Check that it does not delete y_data
+    test_data = test.drop(columns=[response])
+    model = Lasso(alpha=alpha)
+    fit_model = model.fit(x_data, y_data)
+    predictions = fit_model.predict(test_data)
+    # print(predictions)
+    return predictions
+
+np.random.seed(57)
+error_list = np.zeros(4)
+for k in range(1, 5):
+    error_list[k-1] = cross_validate(data, lasso_model, zero_one_penalty, "Death_after", parameter1=10**(-k))
+    # error_list[k-1] = cross_validate(data, knn_model, zero_one_penalty, "Blood-Clots_after", parameter1=k)
+print(error_list)
+# embed()
