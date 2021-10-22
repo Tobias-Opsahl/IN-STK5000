@@ -58,6 +58,9 @@ def side_effect_test(df1, df2, symptom):
     z_value = (p1 - p2)/np.sqrt((p_hat*(1-p_hat)*(1/n1 + 1/n2)))
     return p1, p2, z_value
 
+
+
+# Side effects
 symptom_names = ["No-Taste/Smell", "Fever", "Headache", "Pneumonia", "Stomach", 
                  "Myocarditis", "Blood-Clots", "Death"]
 for symptom in symptom_names: 
