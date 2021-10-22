@@ -28,6 +28,10 @@ data = treat_no_genes
 
 
 def cross_validate(data, model, test_function, response, k_fold=10):
+    """
+    Crossvalidates "model" on "data", according to the error given by 
+    "test_function". "response" is the response that we are predicting.
+    """
     n = len(data)
     cv_indexes = np.zeros(n)
     counter = 0
@@ -46,6 +50,10 @@ def cross_validate(data, model, test_function, response, k_fold=10):
     return error
 
 def zero_one_penalty(outcomes, test, response):
+    """
+    Zero-one penalty. Outcomes are the predictions, test[response] are the 
+    true values.
+    """
     error = 0
     # embed()
     for pred, exact in zip(outcomes, test[response]):
@@ -70,6 +78,11 @@ def penalized_error(outcomes, test, response, penalize_factor=5):
     return error
     
 def knn_model(data, test, response, k=5):
+    """
+    To be used in "cross_validate()". Data is the X data that the KNN
+    model is fitted on, data[response] is the Y data. The function return the 
+    prediction done on "test". 
+    """
     y_data = data[response]
     x_data = data.drop(columns=[response]) # Check that it does not delete y_data
     test_data = test.drop(columns=[response])
