@@ -27,7 +27,7 @@ data = treat_no_genes
 
 
 
-def cross_validate(data, model, test_function, response, k_fold=10):
+def cross_validate(data, model, test_function, response, k_fold=10, parameter1=None, parameter2=None):
     """
     Crossvalidates "model" on "data", according to the error given by 
     "test_function". "response" is the response that we are predicting.
@@ -44,7 +44,7 @@ def cross_validate(data, model, test_function, response, k_fold=10):
     for k in range(k_fold):
         train = data[cv_indexes != k]
         test = data[cv_indexes == k]
-        predictions = model(train, test, response)
+        predictions = model(train, test, response, parameter1)
         # predict on outcomes
         error += test_function(predictions, test, response)
     return error
@@ -77,12 +77,13 @@ def penalized_error(outcomes, test, response, penalize_factor=5):
             error += (1 - exact)
     return error
     
-def knn_model(data, test, response, k=5):
+def knn_model(data, test, response, parameter1=5):
     """
     To be used in "cross_validate()". Data is the X data that the KNN
     model is fitted on, data[response] is the Y data. The function return the 
-    prediction done on "test". 
+    prediction done on "test". "parameter1" is the amount of neighbours. 
     """
+    k = parameter1
     y_data = data[response]
     x_data = data.drop(columns=[response]) # Check that it does not delete y_data
     test_data = test.drop(columns=[response])
@@ -91,5 +92,5 @@ def knn_model(data, test, response, k=5):
     predictions = fit_model.predict(test_data)
     return predictions
 
-cross_validate(data, knn_model, zero_one_penalty, "Death_after")
+cross_validate(data, knn_model, zero_one_penalty, "Death_after", parameter1=10)
 embed()
