@@ -18,7 +18,7 @@ individuals, then the patients' privacy and right to have safe health care has b
 
 ## Privacy of the personal information
 The data do not contain personal information such as name, family name, date of birth etc. This indicates that the privacy of the subjects of 
-research was somewhat protected as we\n",are not able to trace back to individuals by simply looking at the data. However, the data contains 
+research was somewhat protected as we are not able to trace back to individuals by simply looking at the data. However, the data contains 
 information about the age, gender and income of the patients. None of these are considered as personal data, but a combination of  “innocent” 
 data can be used to identify the patient. In this case, we do not consider the existence of information about age and gender as a threat to
 privacy. However, if we had another set of data that contains information about the same group of patiens, combining the two datasets could be used 
