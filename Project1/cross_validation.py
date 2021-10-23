@@ -36,7 +36,7 @@ data = treat_no_genes
 
 
 
-def cross_validate(data, model, test_function, response, k_fold=10, parameter1=None, parameter2=None):
+def cross_validate(data, response, model, test_function, k_fold=10, parameter1=None, parameter2=None):
     """
     Crossvalidates "model" on "data", according to the error given by 
     "test_function". "response" is the response that we are predicting.
@@ -55,10 +55,10 @@ def cross_validate(data, model, test_function, response, k_fold=10, parameter1=N
         test = data[cv_indexes == k]
         predictions = model(train, test, response, parameter1)
         # predict on outcomes
-        error += test_function(predictions, test, response)
+        error += test_function(predictions, test, response, parameter2=parameter2)
     return error
 
-def zero_one_penalty(outcomes, test, response):
+def zero_one_penalty(outcomes, test, response, parameter2=0.5):
     """
     Zero-one penalty. Outcomes are the predictions, test[response] are the 
     true values.
@@ -66,13 +66,13 @@ def zero_one_penalty(outcomes, test, response):
     error = 0
     # embed()
     for pred, exact in zip(outcomes, test[response]):
-        if pred < 0.5:
+        if pred < parameter2:
             error += exact
-        elif pred >= 0.5:
+        elif pred >= parameter2:
             error += (1 - exact)
     return error
     
-def penalized_error(outcomes, test, response, penalize_factor=5):
+def penalized_error(outcomes, test, response, penalize_factor=5, parameter2=0.5):
     """
     Categorical error, where false negatives error are weighted with 
     "penelize_factor", and false posities are weighted with 1. 
@@ -80,9 +80,9 @@ def penalized_error(outcomes, test, response, penalize_factor=5):
     error = 0
     # embed()
     for pred, exact in zip(outcomes, test[response]):
-        if pred < 0.5:
+        if pred < parameter2:
             error += exact * penalize_factor
-        elif pred >= 0.5:
+        elif pred >= parameter2:
             error += (1 - exact)
     return error
     
@@ -118,7 +118,7 @@ def lasso_model(data, test, response, parameter1=1):
 np.random.seed(57)
 error_list = np.zeros(4)
 for k in range(1, 5):
-    error_list[k-1] = cross_validate(data, lasso_model, zero_one_penalty, "Death_after", parameter1=10**(-k))
-    # error_list[k-1] = cross_validate(data, knn_model, zero_one_penalty, "Blood-Clots_after", parameter1=k)
+    error_list[k-1] = cross_validate(data, "Death_after", lasso_model, zero_one_penalty, parameter1=10**(-k), parameter2=0.5)
+    # error_list[k-1] = cross_validate(data, knn_model, zero_one_penalty, "Blood-Clots_after", parameter1=k, parameter2=0.5)
 print(error_list)
 # embed()

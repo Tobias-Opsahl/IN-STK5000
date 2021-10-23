@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from IPython import embed
+from read_functions import *
 
 np.random.seed(57)
 
@@ -17,9 +18,9 @@ def create_correlated_data(num_col, num_cor, num_row, prob=0.9):
         prob (float): Probability for correlated columns to be equal to the
             response. If not, value is random.
     Out:
-        data (np.arry): ((num_row, num_col)) matrix of data, where the 
+        data (pd.DataFrame): ((num_row, num_col)) matrix of data, where the 
             num_cor first columns are correlated with the response.
-        response (np.array): (num_row) size array of the response, which is
+        response (pd.Series): (num_row) size series of the response, which is
             randomly chosen 0 or 1 for each input. 
             
     Creates correlated data. The response is randomly chosen 0 or 1 with a
@@ -46,7 +47,7 @@ def create_correlated_data(num_col, num_cor, num_row, prob=0.9):
                     data[j, i] = 1
     for i in range(num_cor, num_col): # The rest of the columns are random
         data[:, i] = np.random.randint(2, size=num_row)
-    return data, response
+    return pd.DataFrame(data), pd.Series(response)
     
 def correlation(col1, col2):
     """
@@ -79,13 +80,33 @@ def correlation_select(data, response, correlation_threshold=0.01):
     "correlation_threshold" it is chosen. 
     """
     selected_columns = []
+    data = data.to_numpy()
     for i in range(data.shape[1]):
         cor = correlation(response, data[:, i])
-        if cor > correlation_threshold:
+        if abs(cor) > correlation_threshold:
             selected_columns.append(i)
     return selected_columns
 
-data, response = create_correlated_data(128, 10, 100000)
-cor_data = np.c_[response, data] # Merge
-# print(cor_data)
-print(correlation_select(data, response))
+# data = init_features("observation_features.csv")
+# genomes = data.iloc[:, 13:141] # Columns corresponding to Genomes
+# age = data.iloc[:, 10] # Age
+# comorbidities = data.iloc[:, 141:147] # All of comorbidities
+# symptoms = data.iloc[:, :10]
+# vaccines = data.iloc[:, -3:]
+
+# df = pd.DataFrame(age).join(genomes.join(comorbidities))
+# responses = symptoms
+# correlation_select(df, responses[1])
+# data, response = create_correlated_data(128, 10, 10000)
+
+    
+    
+# embed()
+# n = 100000
+# col1 = np.zeros(
+# In [40]: binom.cdf(k=49511, n=100000, p=0.5)
+# Out[40]: 0.0010022415200593084
+
+# cor_data = np.c_[response, data] # Merge
+# # print(cor_data)
+# print(correlation_select(data, response))
