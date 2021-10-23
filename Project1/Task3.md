@@ -10,17 +10,20 @@ the subjects of the research are patients. We do not have information about whet
 subjects of the research consented to be a part of the study. In order to address the ethical issues, we are going to make some assumptions 
 about the sampling methods and the subjects of research. If the patients have agreed to participate in the research, or have been informed 
 that their health data would be used later in a research, have been informed about the purposes of the research and the research procedure, 
-and have given their consent in a written, lawful way, then the data collection method is ethical and correct. If someone has hacked their way 
-into a hospital database in order to conduct this research and gathered information without the consent of the individuals, then the patients' 
-privacy and right to have safe health care has been violated, and this research is highly unethical and unlawful.
+and have given their consent in a written, lawful way, then the data collection method is ethical and correct. Another scenario is where 
+the hospital gives access to their private database to a group of researchers so that they can do research for the hospital. In this case, publishing
+the results of the study is useful and does not raise ethical problems, but the data should not be published publicly and should be kept secret. 
+If someone has hacked their way into a hospital database in order to conduct this research and gathered information without the consent of the 
+individuals, then the patients' privacy and right to have safe health care has been violated, and this research is highly unethical and unlawful.
 
 ## Privacy of the personal information
 The data do not contain personal information such as name, family name, date of birth etc. This indicates that the privacy of the subjects of 
 research was somewhat protected as we\n",are not able to trace back to individuals by simply looking at the data. However, the data contains 
 information about the age, gender and income of the patients. None of these are considered as personal data, but a combination of  “innocent” 
 data can be used to identify the patient. In this case, we do not consider the existence of information about age and gender as a threat to
-privacy. If the data belongs to the database of a hospital in Europe and fits the GDPR, there should not be any problem about privacy in this 
-study and the privacy of the patients is protected.
+privacy. However, if we had another set of data that contains information about the same group of patiens, combining the two datasets could be used 
+to gain more information about each observation, leading lack of privacy and protection of personal information. If the data belongs to the 
+database of a hospital in Europe and fits the GDPR, there should not be any problem about privacy in this study and the privacy of the patients is protected.
 
 ## Justice and fairness
 An important ethical principle in research is justice. The researcher must be fair to the participants and the participants’ needs must always 
