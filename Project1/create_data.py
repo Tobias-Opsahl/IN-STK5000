@@ -166,7 +166,7 @@ def correlation_select(data, response, correlation_threshold=0.01):
             enough for variable to be chosen.
     Out:
         selected_columns (list): List of the indexes of the columns that are
-            chosen. 
+            chosen, with the coressponding correlation
             
     Feature selection based on univariate correlation between a column and the
     response. Looks at each column in "data" independetly and calculates
@@ -177,7 +177,7 @@ def correlation_select(data, response, correlation_threshold=0.01):
     for i in range(data.shape[1]):
         cor = correlation(response, data[:, i])
         if cor > correlation_threshold:
-            selected_columns.append(i)
+            selected_columns.append([i, cor])
     return selected_columns
     
 

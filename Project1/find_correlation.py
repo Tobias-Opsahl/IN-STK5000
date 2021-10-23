@@ -72,7 +72,7 @@ def correlation_select(data, response, correlation_threshold=0.01):
             enough for variable to be chosen.
     Out:
         selected_columns (list): List of the indexes of the columns that are
-            chosen. 
+            chosen, with the corresponding correlation. [[1, cor1], [2, cor2], ... ]
             
     Feature selection based on univariate correlation between a column and the
     response. Looks at each column in "data" independetly and calculates
@@ -80,25 +80,72 @@ def correlation_select(data, response, correlation_threshold=0.01):
     "correlation_threshold" it is chosen. 
     """
     selected_columns = []
-    data = data.to_numpy()
+    data = data.to_numpy() # This runs a bit faster
     for i in range(data.shape[1]):
         cor = correlation(response, data[:, i])
         if abs(cor) > correlation_threshold:
-            selected_columns.append(i)
+            selected_columns.append([i, cor])
     return selected_columns
 
-# data = init_features("observation_features.csv")
-# genomes = data.iloc[:, 13:141] # Columns corresponding to Genomes
-# age = data.iloc[:, 10] # Age
-# comorbidities = data.iloc[:, 141:147] # All of comorbidities
-# symptoms = data.iloc[:, :10]
-# vaccines = data.iloc[:, -3:]
+if __name__ == "__main__": 
+    data = init_features("observation_features.csv")
+    genomes = data.iloc[:, 13:141] # Columns corresponding to Genomes
+    age = data.iloc[:, 10] # Age
+    comorbidities = data.iloc[:, 141:147] # All of comorbidities
+    symptoms = data.iloc[:, :10]
+    vaccines = data.iloc[:, -3:]
+    df = pd.DataFrame(age).join(genomes.join(comorbidities))
+    responses = symptoms
 
-# df = pd.DataFrame(age).join(genomes.join(comorbidities))
-# responses = symptoms
-# correlation_select(df, responses[1])
-# data, response = create_correlated_data(128, 10, 10000)
+    for i in range(len(symptoms.columns)):
+        print(f"Symptom: {responses.columns[i]}")
+        print(correlation_select(df, responses.iloc[:, i], 0.01))
+    embed()
+    # data, response = create_correlated_data(128, 10, 100000, prob=0.5)
+    # print(correlation_select(data, response, 0.02))
+    # embed()
 
+# Symptom: Covid-Recovered
+# [56]
+# Symptom: Covid-Positive
+# [4, 18, 41, 58, 68, 73]
+# Symptom: No-Taste/Smell
+# [20, 77, 97]
+# Symptom: Fever
+# [65]
+# Symptom: Headache
+# [58]
+# Symptom: Pneumonia
+# [38]
+# Symptom: Stomach
+# [40]
+# Symptom: Myocarditis
+# []
+# Symptom: Blood-Clots
+# [15]
+# Symptom: Death
+# [16, 27]
+
+# Symptom: Covid-Recovered
+# [[56, 0.014443416904557303]]
+# Symptom: Covid-Positive
+# [[4, 0.01091111318781941], [18, 0.011559737657274773], [41, 0.010162954915220235], [58, 0.011111603389550025], [68, 0.010028808246363383], [73, 0.015001093771899033]]
+# Symptom: No-Taste/Smell
+# [[20, 0.010600140022869894], [77, 0.010779067557718411], [97, 0.012115836867653605]]
+# Symptom: Fever
+# [[65, 0.01024131561906132]]
+# Symptom: Headache
+# [[58, 0.010749141611376417]]
+# Symptom: Pneumonia
+# [[38, 0.01393825218255369]]
+# Symptom: Stomach
+# [[40, -0.011174851815040404]]
+# Symptom: Myocarditis
+# []
+# Symptom: Blood-Clots
+# [[15, 0.010144010922515321]]
+# Symptom: Death
+# [[16, 0.010095182107169946], [27, 0.01095648351734487]]
     
     
 # embed()
