@@ -82,7 +82,8 @@ def correlation_select(data, response, correlation_threshold=0.01):
     selected_columns = []
     data = data.to_numpy() # This runs a bit faster
     for i in range(data.shape[1]):
-        cor = correlation(response, data[:, i])
+        cor = np.corrcoef(response, data[:, i])[1, 0]
+        # cor = correlation(response, data[:, i])
         if abs(cor) > correlation_threshold:
             selected_columns.append([i, cor])
     return selected_columns
@@ -97,13 +98,13 @@ if __name__ == "__main__":
     df = pd.DataFrame(age).join(genomes.join(comorbidities))
     responses = symptoms
 
-    for i in range(len(symptoms.columns)):
-        print(f"Symptom: {responses.columns[i]}")
-        print(correlation_select(df, responses.iloc[:, i], 0.01))
-    embed()
-    # data, response = create_correlated_data(128, 10, 100000, prob=0.5)
-    # print(correlation_select(data, response, 0.02))
+    # for i in range(len(symptoms.columns)):
+    #     print(f"Symptom: {responses.columns[i]}")
+    #     print(correlation_select(df, responses.iloc[:, i], 0.01))
     # embed()
+    data, response = create_correlated_data(128, 10, 100000, prob=0.5)
+    print(correlation_select(data, response, 0.02))
+    embed()
 
 # Symptom: Covid-Recovered
 # [56]
