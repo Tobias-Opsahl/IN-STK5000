@@ -1,0 +1,50 @@
+## Ethical concerns
+We would like to address the ethical issues in this study. We assume that this study was done
+to investigate the efficiency and possible side effects of vaccines and the results of it
+will benefit the society we live in.
+
+## Consent to participate in the research
+This is an observational study, where the independent/response variable is not under the
+control of the researcher. An observational study uses observational data, which refers to
+information gathered without the presence of the subject of the research. In this study,
+the subjects of the research are patients. We do not have information about whether the
+data collection was ethical or lawful, or the subjects of the research consented to be a
+part of the study. In order to address the ethical issues, we are going to make some
+assumptions about the sampling methods and the subjects of research. If the patients have
+agreed to participate in the research, or have been informed that their health data would
+be used later in a research, have been informed about the purposes of the research and
+the research procedure, and have given their consent in a written, lawful way, then
+the data collection method is ethical and correct. If someone has hacked their way into a
+hospital database in order to conduct this research and gathered information without the
+consent of the individuals, then the patients' privacy and right to have safe health care
+has been violated, and this research is highly unethical and unlawful.
+
+## Privacy of the personal information
+The data do not contain personal information such as name, family name, date of birth etc.
+This indicates that the privacy of the subjects of research was somewhat protected as we
+are not able to trace back to individuals by simply looking at the data. However, the data
+contains information about the age, gender and income of the patients. None of these are
+considered as personal data, but a combination of  “innocent” data can be used to identify
+the patient. If the data belongs to the database of a hospital in Europe and fits the
+GDPR, there should not be any problem about privacy in this study and the privacy of the
+is protected patients.
+
+## Justice and fairness
+An important ethical principle in research is justice. The researcher must be fair to the
+participants and the participants’ needs must always come first. The participants must be
+treated equally throughout the study. The participants must be chosen such that the
+research population represents our society, i.e having 50% men and 50% women, including
+people who belong to different racial groups, minorities or cultures, including people
+with different socioeconomic or academic backgrounds, etc. The researcher must also make
+sure that people included in the research should not be included only because they are a
+population with high accessibility, availability or simply because they belong to a
+vulnerable group, such as children, elderly or mentally ill people, that are less able
+to decline an invitation to participate in the research. If the sample data belongs to a
+population that represents the society we live in, includes all genders, races and
+minorities, and if the researcher does not take the advantage of vulnerable groups, then
+we can say that the research is quite fair and just to its participants. If the researcher
+has gathered data from a population that belongs to a specific minority or of specific
+gender which has higher accessibility, or from people that are confined to an institution
+(i.e prisons, mental health hospitals, children's homes, retirement homes) without
+respecting or protecting their autonomy, then the research is highly unfair to its
+participants.
