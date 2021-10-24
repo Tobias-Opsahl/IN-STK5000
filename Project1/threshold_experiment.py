@@ -20,12 +20,16 @@ col1 = np.zeros(n)
 col2 = np.zeros(n) 
 # I want the mean to be close to 0.5, and columns equal in n - k inputs. 
 
+# for i in range(int(n/4)):
+#     col1[i] = 1
+#     col2[-i] = 1
 for i in range(int(n/2)):
     col1[i] = 1
-    col2[2*i] = 1
+for i in range(int(n/4)):
+    col2[i*4] = 1
 
 for i in range(int(n/2 - k)):
-    col1[2*i] = 0
+    col1[4*i] = 0
 
 diff = abs(col1-col2)
 print(np.mean(diff))

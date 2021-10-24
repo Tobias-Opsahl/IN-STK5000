@@ -97,14 +97,20 @@ if __name__ == "__main__":
     vaccines = data.iloc[:, -3:]
     df = pd.DataFrame(age).join(genomes.join(comorbidities))
     responses = symptoms
+    for i in range(10):
+        print(f"{df.columns[i]}: {sum(df.iloc[:, i])/len(df):.4f}")
+    # for variable in df.columns:
+    #     print(f"{variable}: {sum(df[variable])/len(df):.4f}")
+    for symptom in symptoms.columns:
+        print(f"{symptom}: {sum(symptoms[symptom])/len(symptoms):.4f}")
 
     # for i in range(len(symptoms.columns)):
     #     print(f"Symptom: {responses.columns[i]}")
     #     print(correlation_select(df, responses.iloc[:, i], 0.01))
     # embed()
-    data, response = create_correlated_data(128, 10, 100000, prob=0.5)
-    print(correlation_select(data, response, 0.02))
-    embed()
+    # data, response = create_correlated_data(128, 10, 100000, prob=0.5)
+    # print(correlation_select(data, response, 0.02))
+    # embed()
 
 # Symptom: Covid-Recovered
 # [56]
