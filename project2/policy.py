@@ -6,7 +6,8 @@
 ## outcomes: symptoms (including covid-positive)
 
 import numpy as np
-from aux import symptom_names
+from aux_file import symptom_names
+import simulator
 
 class Policy:
     """ A policy for treatment/vaccination. """
@@ -106,3 +107,28 @@ class RandomPolicy(Policy):
                 actions[t,action] = 1
             
         return actions
+
+if __name__ == "__main__":
+    policy = Policy(3, ["treatment1", "treatment2", "treatment3"])
+    n_genes = 128
+    n_vaccines = 3
+    n_treatments = 4
+    n_population = 1000
+    
+    # Create the underlying population
+    print("Generating population")
+    population = simulator.Population(n_genes, n_vaccines, n_treatments)
+    X = population.generate(n_population)
+    print("Vaccination")
+    vaccine_policy = RandomPolicy(n_vaccines, list(range(-1,n_vaccines))) # make sure to add -1 for 'no vaccine'
+    
+    
+    print("With a for loop")
+    # The simplest way to work is to go through every individual in the population
+    for t in range(n_population):
+        a_t = vaccine_policy.get_action(X[t])
+        # Then you can obtain results for everybody
+        y_t = population.vaccinate([t], a_t)
+        # Feed the results back in your policy. This allows you to fit the
+        # statistical model you have.
+        vaccine_policy.observe(X[t], a_t, y_t)
