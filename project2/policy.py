@@ -42,12 +42,12 @@ class Policy:
             self.data.append(features, actions, outcomes)
             self.model.fit(data)
         """
-        df1 = add_feature_names(features)
-        df2 = add_action_names(actions)
-        df3 = add_outcome_names(outcomes)
-        df = df1.join(df2.join(df3))
-        
-        
+        # df1 = add_feature_names(features)
+        # df2 = add_action_names(actions)
+        # df3 = add_outcome_names(outcomes)
+        # df = df1.join(df2.join(df3))
+        pass
+            
     def get_utility(self, features, action, outcome):
         """ Obtain the empirical utility of the policy on a set of one or more people. 
         If there are t individuals with x features, and the action
@@ -58,30 +58,26 @@ class Policy:
         outcomes (t*|Y| array)
         Returns:
         Empirical utility of the policy on this data.
-        """    
-        # df1 = add_feature_names(features)
-        # df2 = add_action_names(actions)
-        # df3 = add_outcome_names(outcomes)
-        # df = df1.join(df2.join(df3))
-        """Here the utiliy is defined in terms of the outcomes obtained only, ignoring both the treatment and the previous condition.
+    
+        Here the utiliy is defined in terms of the outcomes obtained only, ignoring both the treatment and the previous condition.
         """
-        rewards = np.zeros(len(outcome))
-        for t in range(len(features)):
-            utility = 0
-            utility -= 0.2 * sum(outcome[:,symptom_names['Covid-Positive']])
-            utility -= 0.1 * sum(outcome[:,symptom_names['Taste']])
-            utility -= 0.1 * sum(outcome[:,symptom_names['Fever']])
-            utility -= 0.1 * sum(outcome[:,symptom_names['Headache']])
-            utility -= 0.5 * sum(outcome[:,symptom_names['Pneumonia']])
-            utility -= 0.2 * sum(outcome[:,symptom_names['Stomach']])
-            utility -= 0.5 * sum(outcome[:,symptom_names['Myocarditis']])
-            utility -= 1.0 * sum(outcome[:,symptom_names['Blood-Clots']])
-            utility -= 100.0 * sum(outcome[:,symptom_names['Death']])
-            rewards[t] = utility
-        return rewards
+
+        utility = 0
+        utility -= 0.2 * sum(outcome[:,symptom_names['Covid-Positive']])
+        utility -= 0.1 * sum(outcome[:,symptom_names['Taste']])
+        utility -= 0.1 * sum(outcome[:,symptom_names['Fever']])
+        utility -= 0.1 * sum(outcome[:,symptom_names['Headache']])
+        utility -= 0.5 * sum(outcome[:,symptom_names['Pneumonia']])
+        utility -= 0.2 * sum(outcome[:,symptom_names['Stomach']])
+        utility -= 0.5 * sum(outcome[:,symptom_names['Myocarditis']])
+        utility -= 1.0 * sum(outcome[:,symptom_names['Blood-Clots']])
+        utility -= 100.0 * sum(outcome[:,symptom_names['Death']])
+        return utility
         
-    def get_utility2(self, features, actions, outcome):
-        
+    def get_reward(self, features, actions, outcome):
+        """
+        This method calculates the reward, the utility of a single person.
+        """
         rewards = np.zeros(len(outcome))
         for t in range(len(features)):
             utility = 0
@@ -113,7 +109,6 @@ class Policy:
            return argmax(u)
         You are expected to create whatever helper functions you need.
         """
-        # Random 
         n_population = features.shape[0]
         model1, model2, model3 = self.linear_model(n_population)
     
@@ -123,19 +118,14 @@ class Policy:
         pred2 = model2.predict(self.feature_select(features))
         pred3 = model3.predict(self.feature_select(features))
         for t in range(n_population):
-            print(f"1: {pred1[t]} 2: {pred2[t]} 3: {pred3[t]}")
+            # print(f"1: {pred1[t]} 2: {pred2[t]} 3: {pred3[t]}")
             if pred1[t] >= pred2[t] and pred1[t] >= pred3[t]:
                 actions[t, 0] = 1
             elif pred2[t] >= pred1[t] and pred2[t] >= pred3[t]:
                 actions[t, 1] = 1
             elif pred3[t] >= pred1[t] and pred3[t] >= pred2[t]:
                 actions[t, 2] = 1
-            
-        # for t in range(features.shape[0]):
-        #     if df.iloc[t, symptom_names['Myocarditis']] == 1:
-        #         actions[t, 0] = 1
-        #     else:
-        #         actions[t, 1] = 1
+    
         return actions
     
     def linear_model(self, n_population):
@@ -151,13 +141,10 @@ class Policy:
         x_data1 = x_data[A[:, 0] == 1] # Action 1
         x_data2 = x_data[A[:, 1] == 1] # Action 2
         x_data3 = x_data[A[:, 2] == 1] # Action 3
-        y_data1 = treatment_policy.get_utility2(x_data1, 0, U[A[:, 0] == 1])
-        y_data2 = treatment_policy.get_utility2(x_data2, 0, U[A[:, 1] == 1])
-        y_data3 = treatment_policy.get_utility2(x_data3, 0, U[A[:, 2] == 1])
+        y_data1 = treatment_policy.get_reward(x_data1, 0, U[A[:, 0] == 1])
+        y_data2 = treatment_policy.get_reward(x_data2, 0, U[A[:, 1] == 1])
+        y_data3 = treatment_policy.get_reward(x_data3, 0, U[A[:, 2] == 1])
                 
-                
-        
-        
         linear_model_test1 = LinearRegression()
         linear_model_test2 = LinearRegression()
         linear_model_test3 = LinearRegression()
@@ -172,7 +159,7 @@ class Policy:
         
     def feature_select(self, X):
         """
-        Chooses some columns in X
+        Chooses some columns in X. For now, we just omit the genes
         """
         df = add_feature_names(X)
         temp1 = df.iloc[:, :13]
@@ -249,13 +236,15 @@ def add_outcome_names(outcomes):
     return df
     
 def privatize(X, theta):
-    df = add_feature_names(X)
+    df = add_feature_names(X).copy()
     df["Age"] = randomize_age(df["Age"], theta)
     df["Income"] = randomize_income(df["Income"], theta)
-    private_columns = ["Gender"] + ["Genome" + str(i) for i in range(1, 129)]
-    for column in private_columns:
-        df[column] = randomize(df[column], theta)
-    return np.asmatrix(df)
+    # private_columns = ["Gender"] + ["Genome" + str(i) for i in range(1, 129)]
+    for column in df.columns:
+        if column != "Age" or column != "Income":
+            df[column] = randomize(df[column], theta)
+    # embed()
+    return np.asarray(df)
     
 def randomize(a, theta):
     """
@@ -279,9 +268,10 @@ def randomize_age(a, theta):
     noise = np.random.gamma(3,11, size=a.shape)
     response = np.array(a)
     response[~coins] = noise[~coins]
-    return age
+    return response
 
 if __name__ == "__main__":
+    
     np.random.seed(57)
     n_genes = 128
     n_vaccines = 3
@@ -290,13 +280,17 @@ if __name__ == "__main__":
     population = simulator.Population(n_genes, n_vaccines, n_treatments)
     treatment_policy = Policy(n_treatments, list(range(n_treatments)))
     X = population.generate(n_population)
+    np.random.seed(57)
     A = treatment_policy.get_action(X)
+    np.random.seed(57)
     U = population.treat(list(range(n_population)), A)
-    # X_priv = privatize(X, 0.8)
-    # A_priv = treatment_policy.get_action(X_priv)
-    # U_priv = population.treat(list(range(n_population)), A_priv)
-    # utility = treatment_policy.get_utility(X, A, U)
-    # utility_priv = treatment_policy.get_utility(X_priv, A_priv, U_priv)
+    X_priv = privatize(X, 0.9)
+    np.random.seed(57)
+    A_priv = treatment_policy.get_action(X_priv)
+    np.random.seed(57)
+    U_priv = population.treat(list(range(n_population)), A_priv)
+    utility = treatment_policy.get_utility(X, A, U)
+    utility_priv = treatment_policy.get_utility(X_priv, A_priv, U_priv)
     embed()
     
     
