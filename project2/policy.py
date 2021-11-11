@@ -246,6 +246,17 @@ def privatize(X, theta):
     # embed()
     return np.asarray(df)
     
+def privatize_actions(A, theta):
+    """
+    Adds noise to the actions chosen bu the model. This is currently done
+    a little bit primitive, since person no longer receives exactly one
+    treatment.
+    """
+    A1 = A.copy()
+    for i in range(A1.shape[1]):
+        A1[:, i] = randomize(A1[:, i], theta)
+    return A1
+    
 def randomize(a, theta):
     """
     Randomize a single column
@@ -284,6 +295,7 @@ if __name__ == "__main__":
     A = treatment_policy.get_action(X)
     np.random.seed(57)
     U = population.treat(list(range(n_population)), A)
+    rand = privatize_actions(A, 0.9)
     X_priv = privatize(X, 0.9)
     np.random.seed(57)
     A_priv = treatment_policy.get_action(X_priv)
