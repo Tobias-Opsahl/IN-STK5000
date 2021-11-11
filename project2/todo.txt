@@ -1,0 +1,24 @@
+
+# Todo
+1.
+Spesifisere utility - greit
+
+Regne ut epsilon - vanskelig
+
+Legge til Laplace istedenfor å trekke på nytt - lett
+
+Finne ut hvordan man kan iterativt oppdatere policy - vanskelig
+2.
+
+Identifisere sensitive data - lett
+er det bias i dataen allerede - greit
+Analyser dataen med histogrammer - greit
+
+
+- For balance (or calibration), measure the total variation of the action (or outcome) 
+    distribution for different outcomes (or actions) when the sensitive variable varies.
+
+Finne ut hvordan man kan bruke gradiant descent - vansklig
+
+3.
+Vente på historical data

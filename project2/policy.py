@@ -236,16 +236,18 @@ def add_outcome_names(outcomes):
     return df
     
 def privatize(X, theta):
+    """
+    Adds noice to the data, column by column. The continious and discreet 
+    columns are treated differently. 
+    """
     df = add_feature_names(X).copy()
     df["Age"] = randomize_age(df["Age"], theta)
     df["Income"] = randomize_income(df["Income"], theta)
-    # private_columns = ["Gender"] + ["Genome" + str(i) for i in range(1, 129)]
     for column in df.columns:
         if column != "Age" or column != "Income":
             df[column] = randomize(df[column], theta)
-    # embed()
     return np.asarray(df)
-    
+
 def privatize_actions(A, theta):
     """
     Adds noise to the actions chosen bu the model. This is currently done
@@ -259,7 +261,7 @@ def privatize_actions(A, theta):
     
 def randomize(a, theta):
     """
-    Randomize a single column
+    Randomize a single column. Simply add a cointoss to "theta" amount of the data
     """
     coins = np.random.choice([True, False], p=(theta, (1-theta)), size=a.shape)
     noise = np.random.choice([0, 1], size=a.shape)
@@ -268,6 +270,9 @@ def randomize(a, theta):
     return response 
     
 def randomize_income(a, theta):
+    """
+    Randomize by drawing from the same population again
+    """
     coins = np.random.choice([True, False], p=(theta, (1-theta)), size=a.shape)
     noise = np.random.gamma(1,10000, size=a.shape)
     response = np.array(a)
@@ -275,6 +280,9 @@ def randomize_income(a, theta):
     return response 
     
 def randomize_age(a, theta):
+    """
+    Randomize by drawing from the same population again
+    """
     coins = np.random.choice([True, False], p=(theta, (1-theta)), size=a.shape)
     noise = np.random.gamma(3,11, size=a.shape)
     response = np.array(a)
