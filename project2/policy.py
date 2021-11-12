@@ -48,7 +48,7 @@ class Policy:
         # df = df1.join(df2.join(df3))
         pass
             
-    def get_utility(self, features, action, outcome):
+    def get_utility(self, features, actions, outcome):
         """ Obtain the empirical utility of the policy on a set of one or more people. 
         If there are t individuals with x features, and the action
         
@@ -59,38 +59,60 @@ class Policy:
         Returns:
         Empirical utility of the policy on this data.
     
-        Here the utiliy is defined in terms of the outcomes obtained only, ignoring both the treatment and the previous condition.
+        We sum up the reward, which gives negative weight if persons gain 
+        a new symptom, and positive if they get rid of it. 
         """
-
-        utility = 0
-        utility -= 0.2 * sum(outcome[:,symptom_names['Covid-Positive']])
-        utility -= 0.1 * sum(outcome[:,symptom_names['Taste']])
-        utility -= 0.1 * sum(outcome[:,symptom_names['Fever']])
-        utility -= 0.1 * sum(outcome[:,symptom_names['Headache']])
-        utility -= 0.5 * sum(outcome[:,symptom_names['Pneumonia']])
-        utility -= 0.2 * sum(outcome[:,symptom_names['Stomach']])
-        utility -= 0.5 * sum(outcome[:,symptom_names['Myocarditis']])
-        utility -= 1.0 * sum(outcome[:,symptom_names['Blood-Clots']])
-        utility -= 100.0 * sum(outcome[:,symptom_names['Death']])
+        # 
+        # utility = 0
+        # utility -= 0.2 * sum(outcome[:,symptom_names['Covid-Positive']])
+        # utility -= 0.1 * sum(outcome[:,symptom_names['Taste']])
+        # utility -= 0.1 * sum(outcome[:,symptom_names['Fever']])
+        # utility -= 0.1 * sum(outcome[:,symptom_names['Headache']])
+        # utility -= 0.5 * sum(outcome[:,symptom_names['Pneumonia']])
+        # utility -= 0.2 * sum(outcome[:,symptom_names['Stomach']])
+        # utility -= 0.5 * sum(outcome[:,symptom_names['Myocarditis']])
+        # utility -= 1.0 * sum(outcome[:,symptom_names['Blood-Clots']])
+        # utility -= 100.0 * sum(outcome[:,symptom_names['Death']])
+        utility = sum(self.get_reward(features, actions, outcome))
         return utility
         
-    def get_reward(self, features, actions, outcome):
+    def get_reward(self, features, actions, outcome, penalty=1.5):
         """
-        This method calculates the reward, the utility of a single person.
+        Out:
+            rewards (np.array): Array of rewards, corresponding to the persons
+                in features (and actions and outcome).
+        This method calculates the reward, the utility of a single person. This
+        is returned as an array with values corresponding to the reward of each 
+        persons. 
+        The reward is given by a positive weight if a person has recovered 
+        a symptom, and the corresponding negativ weight, times a penalty factor
+        "penalty" if the person has gotten the symptom. If the person had the
+        symptom and did not get rid of it, nothing is done.
         """
         rewards = np.zeros(len(outcome))
+        weights = [0, 0.2, 0.1, 0.1, 0.1, 0.5, 0.2, 0.5, 1.0, 100.0]
         for t in range(len(features)):
             utility = 0
-            utility -= 0.2 * outcome[t,symptom_names['Covid-Positive']]
-            utility -= 0.1 * outcome[t,symptom_names['Taste']]
-            utility -= 0.1 * outcome[t,symptom_names['Fever']]
-            utility -= 0.1 * outcome[t,symptom_names['Headache']]
-            utility -= 0.5 * outcome[t,symptom_names['Pneumonia']]
-            utility -= 0.2 * outcome[t,symptom_names['Stomach']]
-            utility -= 0.5 * outcome[t,symptom_names['Myocarditis']]
-            utility -= 1.0 * outcome[t,symptom_names['Blood-Clots']]
-            utility -= 100.0 * outcome[t,symptom_names['Death']]
-            rewards[t] = utility
+            for i in range(1, len(weights)): # i loops over the sypmtom indexes
+                if features[t, i] == 1 and outcome[t, i] == 0:
+                    utility += weights[i]
+                if features[t, i] == 0 and outcome[t, i] == 1:
+                    utility -= weights[i] * penalty
+            rewards[t] = utility 
+        # rewards_test = np.zeros(len(outcome))
+        # for t in range(len(features)):
+        #     utility = 0
+        #     utility -= 0.2 * outcome[t,symptom_names['Covid-Positive']]
+        #     utility -= 0.1 * outcome[t,symptom_names['Taste']]
+        #     utility -= 0.1 * outcome[t,symptom_names['Fever']]
+        #     utility -= 0.1 * outcome[t,symptom_names['Headache']]
+        #     utility -= 0.5 * outcome[t,symptom_names['Pneumonia']]
+        #     utility -= 0.2 * outcome[t,symptom_names['Stomach']]
+        #     utility -= 0.5 * outcome[t,symptom_names['Myocarditis']]
+        #     utility -= 1.0 * outcome[t,symptom_names['Blood-Clots']]
+        #     utility -= 100.0 * outcome[t,symptom_names['Death']]
+        #     rewards_test[t] = utility
+        # embed()
         return rewards
 
     def get_action(self, features):
@@ -239,6 +261,9 @@ def privatize(X, theta):
     """
     Adds noice to the data, column by column. The continious and discreet 
     columns are treated differently. 
+    
+    TO DO: Do not randomize symptoms. This removes symptoms, which is 
+    very favorable.
     """
     df = add_feature_names(X).copy()
     df["Age"] = randomize_age(df["Age"], theta)
@@ -269,33 +294,34 @@ def randomize(a, theta):
     response[~coins] = noise[~coins]
     return response 
     
-def randomize_income(a, theta):
+def randomize_income(a, theta, decay=0.1):
     """
     Randomize by drawing from the same population again
     """
     coins = np.random.choice([True, False], p=(theta, (1-theta)), size=a.shape)
-    noise = np.random.gamma(1,10000, size=a.shape)
+    # noise = np.random.gamma(1,10000, size=a.shape)
+    noise = np.random.laplace(0, decay, a.size)
     response = np.array(a)
-    response[~coins] = noise[~coins]
+    response[~coins] = response[~coins] + noise[~coins]
     return response 
     
-def randomize_age(a, theta):
+def randomize_age(a, theta, decay=0.1):
     """
     Randomize by drawing from the same population again
     """
     coins = np.random.choice([True, False], p=(theta, (1-theta)), size=a.shape)
-    noise = np.random.gamma(3,11, size=a.shape)
+    # noise = np.random.gamma(3,11, size=a.shape)
+    noise = np.random.laplace(0, decay, a.size)
     response = np.array(a)
-    response[~coins] = noise[~coins]
+    response[~coins] = response[~coins] + noise[~coins]
     return response
 
 if __name__ == "__main__":
-    
     np.random.seed(57)
     n_genes = 128
     n_vaccines = 3
     n_treatments = 3
-    n_population = 1000
+    n_population = 10000
     population = simulator.Population(n_genes, n_vaccines, n_treatments)
     treatment_policy = Policy(n_treatments, list(range(n_treatments)))
     X = population.generate(n_population)
@@ -303,48 +329,26 @@ if __name__ == "__main__":
     A = treatment_policy.get_action(X)
     np.random.seed(57)
     U = population.treat(list(range(n_population)), A)
-    rand = privatize_actions(A, 0.9)
-    X_priv = privatize(X, 0.9)
-    np.random.seed(57)
-    A_priv = treatment_policy.get_action(X_priv)
-    np.random.seed(57)
-    U_priv = population.treat(list(range(n_population)), A_priv)
     utility = treatment_policy.get_utility(X, A, U)
-    utility_priv = treatment_policy.get_utility(X_priv, A_priv, U_priv)
+    
+    # embed()
+    thetas = [0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5]
+    utility_list = np.zeros(len(thetas)+1)
+    utility_list[0] = utility
+    for i in range(len(thetas)):
+        print(i)
+        X_priv = privatize(X, thetas[i])
+        np.random.seed(57)
+        A_priv = treatment_policy.get_action(X_priv)
+        np.random.seed(57)
+        U_priv = population.treat(list(range(n_population)), A_priv)
+        utility_list[i+1] = treatment_policy.get_utility(X_priv, A_priv, U_priv)
+    
+    utility_list2 = np.zeros(len(thetas) + 1)
+    utility_list2[0] = utility
+    for i in range(len(thetas)):
+        np.random.seed(57)
+        A_noise = privatize_actions(A, thetas[i])
+        U_noise = population.treat(list(range(n_population)), A_noise)
+        utility_list2[i+1] = treatment_policy.get_utility(X, A_noise, U_noise)
     embed()
-    
-    
-    # 
-    # # Create the underlying population
-    # print("Generating population")
-    # population = simulator.Population(n_genes, n_vaccines, n_treatments)
-    # treatment_policy = Policy(n_treatments, list(range(n_treatments))) # make sure to add -1 for 'no vaccine'
-    # X = population.generate(n_population)
-    # A = treatment_policy.get_action(X)
-    # U = population.treat(list(range(n_population)), A)
-    # utility = treatment_policy.get_utility(X, A, U)
-    # df = add_feature_names(X)
-    # print(utility)
-    # embed()
-    # In [6]: A.shape
-    # Out[6]: (1000, 3)
-    # 
-    # In [7]: V.shape
-    # Out[7]: (1000, 10)
-    # 
-    # In [8]: X.shape
-    # Out[8]: (1000, 150)
-    # embed()
-    
-    # print(type(X))
-    
-    # print("Vaccination")
-    # print("With a for loop")
-    # # The simplest way to work is to go through every individual in the population
-    # for t in range(n_population):
-    #     a_t = vaccine_policy.get_action(X[t])
-    #     # Then you can obtain results for everybody
-    #     y_t = population.vaccinate([t], a_t)
-    #     # Feed the results back in your policy. This allows you to fit the
-    #     # statistical model you have.
-    #     vaccine_policy.observe(X[t], a_t, y_t)
