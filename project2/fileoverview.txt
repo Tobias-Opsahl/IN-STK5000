@@ -1,0 +1,33 @@
+
+new_functions.py ->
+    Make the new functions for load_dwellings_from_db(), load_dwellings_total(),
+    load_transactions_from_db(), load_transactions_for_current(),
+    load_sales_from_db(), load_sales_for_current() and load_sales_total(), from
+    the old io.py. The functions are created so that they create the same
+    output as io.py, but they are made in such a way that one function does
+    all the reading, the preprocessing is done in separate places and some
+    uneccesary code is removed. It is also a little bit more commmented and 
+    structured. 
+    
+test_file.py ->
+    File for testing while making new_functions.py
+
+time_test_old.py ->
+    Contains some functions for timing functions, used in test_file.py to test
+    new_functions.py.
+
+time_test.py ->
+    Contains function for timing other functions, used in test_new.py for 
+    testing io_new.py. 
+    
+io_new.py ->
+    New functions for reading and preprocessing. This time, the functions does 
+    not run exactly as before, because the earlier functions had some bugs.
+    The bugs are now fixed and the preprocessing is a little bit changed. 
+    These functions are the ones who are meant to be used in the end. 
+    
+test_new.py -> 
+    File for testing io_new.py. 
+    
+running_times ->
+    Overview of runningtime of new_functions.py against io.py
