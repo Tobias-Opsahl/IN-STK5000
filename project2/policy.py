@@ -10,8 +10,9 @@ import pandas as pd
 from aux_file import symptom_names
 import simulator
 from IPython import embed
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
 
+np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
 class Policy:
     """ A policy for treatment/vaccination. """
@@ -132,8 +133,9 @@ class Policy:
         You are expected to create whatever helper functions you need.
         """
         n_population = features.shape[0]
+        # model1, model2, model3 = self.linear_model(n_population)
         model1, model2, model3 = self.linear_model(n_population)
-    
+
         # embed()
         actions = np.zeros([n_population, self.n_actions])
         pred1 = model1.predict(self.feature_select(features))
@@ -149,6 +151,37 @@ class Policy:
                 actions[t, 2] = 1
     
         return actions
+        
+    def logistic_model(self, n_population):
+        """
+        Fit a logistic model on random data
+        """
+        population = simulator.Population(128, 3, 3)
+        treatment_policy = RandomPolicy(3, list(range(3)))
+        X = population.generate(n_population)
+        A = treatment_policy.get_action(X)
+        U = population.treat(list(range(n_population)), A)
+        x_data = self.feature_select(X)
+        x_data1 = x_data[A[:, 0] == 1] # Action 1
+        x_data2 = x_data[A[:, 1] == 1] # Action 2
+        x_data3 = x_data[A[:, 2] == 1] # Action 3
+        y_data1 = treatment_policy.get_reward(x_data1, 0, U[A[:, 0] == 1])
+        y_data2 = treatment_policy.get_reward(x_data2, 0, U[A[:, 1] == 1])
+        y_data3 = treatment_policy.get_reward(x_data3, 0, U[A[:, 2] == 1])
+                
+        embed()
+        linear_model_test1 = LogisticRegression()
+        linear_model_test2 = LogisticRegression()
+        linear_model_test3 = LogisticRegression()
+        # embed()
+        model1 = linear_model_test1.fit(x_data1, y_data1)
+        model2 = linear_model_test2.fit(x_data2, y_data2)
+        model3 = linear_model_test3.fit(x_data3, y_data3)
+        coefficients = pd.DataFrame(np.transpose(fit_model.coef_))
+        print(coefficients)
+        embed()
+        return model1, model2, model3
+    
     
     def linear_model(self, n_population):
         """
@@ -323,32 +356,34 @@ if __name__ == "__main__":
     n_treatments = 3
     n_population = 10000
     population = simulator.Population(n_genes, n_vaccines, n_treatments)
+    np.random.seed(57)
+    X = population.generate(n_population) # Population
+    
     treatment_policy = Policy(n_treatments, list(range(n_treatments)))
-    X = population.generate(n_population)
     np.random.seed(57)
-    A = treatment_policy.get_action(X)
-    np.random.seed(57)
+    A = treatment_policy.get_action(X) # Actions 
+    embed()
     U = population.treat(list(range(n_population)), A)
     utility = treatment_policy.get_utility(X, A, U)
     
     # embed()
-    thetas = [0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5]
-    utility_list = np.zeros(len(thetas)+1)
-    utility_list[0] = utility
-    for i in range(len(thetas)):
-        print(i)
-        X_priv = privatize(X, thetas[i])
-        np.random.seed(57)
-        A_priv = treatment_policy.get_action(X_priv)
-        np.random.seed(57)
-        U_priv = population.treat(list(range(n_population)), A_priv)
-        utility_list[i+1] = treatment_policy.get_utility(X_priv, A_priv, U_priv)
+    # utility_list = np.zeros(len(thetas)+1)
+    # utility_list[0] = utility
+    # for i in range(len(thetas)):
+    #     print(i)
+    #     X_priv = privatize(X, thetas[i])
+    #     np.random.seed(57)
+    #     A_priv = treatment_policy.get_action(X_priv)
+    #     np.random.seed(57)
+    #     U_priv = population.treat(list(range(n_population)), A_priv)
+    #     utility_list[i+1] = treatment_policy.get_utility(X_priv, A_priv, U_priv)
     
-    utility_list2 = np.zeros(len(thetas) + 1)
-    utility_list2[0] = utility
-    for i in range(len(thetas)):
-        np.random.seed(57)
-        A_noise = privatize_actions(A, thetas[i])
-        U_noise = population.treat(list(range(n_population)), A_noise)
-        utility_list2[i+1] = treatment_policy.get_utility(X, A_noise, U_noise)
-    embed()
+
+    # thetas = [1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
+    # utility_list2 = np.zeros(len(thetas) + 1)
+    # utility_list2[0] = utility
+    # for i in range(len(thetas)):
+    #     np.random.seed(57)
+    #     A_noise = privatize_actions(A, thetas[i])
+    #     U_noise = population.treat(list(range(n_population)), A_noise)
+    #     utility_list2[i+1] = treatment_policy.get_utility(X, A_noise, U_noise)
