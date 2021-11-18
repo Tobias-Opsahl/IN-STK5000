@@ -59,7 +59,7 @@ class Policy:
         # return np.asmatrix(temp1.join(temp2))
         return N
         
-    def get_reward(self, features, actions, outcome, penalty=1.5):
+    def get_reward(self, features, actions, outcome, penalty=1.5, threshold=0.5):
         """
         Out:
             rewards (np.array): Array of rewards, corresponding to the persons
@@ -77,11 +77,14 @@ class Policy:
         for t in range(len(features)):
             utility = 0
             for i in range(1, len(weights)): # i loops over the sypmtom indexes
-                if features[t, i] == 1 and outcome[t, i-1] == 0:
+                if features[t, i] == 1 and outcome[t, i-1] < threshold:
                     utility += weights[i]
-                if features[t, i] == 0 and outcome[t, i-1] == 1:
+                if features[t, i] == 0 and outcome[t, i-1] >= threshold:
                     utility -= weights[i] * penalty
+            if sum(actions[t, :]) > 0: # Some action were used
+                utility = utility - 0.1 # The treatment is not free
             rewards[t] = utility 
+            
         return rewards
         
     ## Observe the features, treatments and outcomes of one or more individuals
@@ -126,7 +129,7 @@ class Policy:
         self.models2 = models[9:18]
         self.models3 = models[18:]
         
-    def get_utility(self, features, action, outcome):
+    def get_utility(self, features, actions, outcome):
         """ Obtain the empirical utility of the policy on a set of one or more people. 
         If there are t individuals with x features, and the action
         
@@ -167,21 +170,24 @@ class Policy:
             x_data = self.feature_select(features, symptom_index)
             scaler = preprocessing.StandardScaler().fit(x_data)
             x_scaled = scaler.transform(x_data)
-            pred1 = self.models1[symptom_index - 1].predict(x_scaled)
-            pred2 = self.models2[symptom_index - 1].predict(x_scaled)
-            pred3 = self.models3[symptom_index - 1].predict(x_scaled)
+            pred1 = self.models1[symptom_index - 1].predict_proba(x_scaled)[:, 1]
+            pred2 = self.models2[symptom_index - 1].predict_proba(x_scaled)[:, 1]
+            pred3 = self.models3[symptom_index - 1].predict_proba(x_scaled)[:, 1]
             post_symptoms1[:, symptom_index-1] = pred1
             post_symptoms2[:, symptom_index-1] = pred2
             post_symptoms3[:, symptom_index-1] = pred3
         
-        rewards1 = self.get_reward(features, 0, post_symptoms1)
-        rewards2 = self.get_reward(features, 1, post_symptoms2)
-        rewards3 = self.get_reward(features, 2, post_symptoms3)
+        mock_actions = np.ones((self.n_population, 3)) # Represent an actions has been done
+        rewards1 = self.get_reward(features, mock_actions, post_symptoms1)
+        rewards2 = self.get_reward(features, mock_actions, post_symptoms2)
+        rewards3 = self.get_reward(features, mock_actions, post_symptoms3)
         
         actions = np.zeros([n_population, self.n_actions])
         for t in range(n_population):
             # print(f"1: {pred1[t]} 2: {pred2[t]} 3: {pred3[t]}")
-            if rewards1[t] >= rewards2[t] and rewards1[t] >= rewards3[t]:
+            if np.max(np.asarray([rewards1[t], rewards2[t], rewards3[t]])) < 0:
+                actions[t, 0] = 0 # Do nothing
+            elif rewards1[t] >= rewards2[t] and rewards1[t] >= rewards3[t]:
                 actions[t, 0] = 1
             elif rewards2[t] >= rewards1[t] and rewards2[t] >= rewards3[t]:
                 actions[t, 1] = 1
@@ -189,6 +195,9 @@ class Policy:
                 actions[t, 2] = 1
         # embed()
         return actions
+    
+    def get_arguments(self):
+        return self.features, self.actions, self.outcomes
 
 class RandomPolicy(Policy):
     """ This is a purely random policy!"""
@@ -244,9 +253,29 @@ def add_feature_names(X):
     features += ["Vaccination status" + str(i) for i in range(1, 4)]
     features_data.columns = features
     return features_data
+
+def privatize_actions(A, theta):
+    """
+    Adds noise to the actions chosen bu the model. This is currently done
+    a little bit primitive, since person no longer receives exactly one
+    treatment.
+    """
+    A1 = A.copy()
+    for i in range(A1.shape[1]):
+        A1[:, i] = randomize(A1[:, i], theta)
+    return A1
+    
+def randomize(a, theta):
+    """
+    Randomize a single column. Simply add a cointoss to "theta" amount of the data
+    """
+    coins = np.random.choice([True, False], p=(theta, (1-theta)), size=a.shape)
+    noise = np.random.choice([0, 1], size=a.shape)
+    response = np.array(a)
+    response[~coins] = noise[~coins]
+    return response 
     
 if __name__ == "__main__":
-    a = 3
     np.random.seed(57)
     n_genes = 128
     n_vaccines = 3
@@ -255,12 +284,37 @@ if __name__ == "__main__":
     population = simulator.Population(n_genes, n_vaccines, n_treatments)
     np.random.seed(57)
     X = population.generate(n_population) # Population
-    embed()
+    # embed()
     treatment_policy = Policy(n_treatments, list(range(n_treatments)))
     np.random.seed(57)
     features, actions, outcomes = treatment_policy.initialize_data(n_population)
     treatment_policy.observe(features, actions, outcomes)
+    # features, actions, outcomes = treatment_policy.get_arguments()
+    
     A = treatment_policy.get_action(X) # Actions 
+    U = population.treat(list(range(n_population)), A)
+    # print(treatment_policy.get_utility(features, A, U))
+    
+    # treatment_policy.observe(features, actions, outcomes)
+    # A = treatment_policy.get_action(X) # Actions 
+    # U = population.treat(list(range(n_population)), A)
+    # print(treatment_policy.get_utility(features, A, U))
+    # 
+    # treatment_policy.observe(features, actions, outcomes)
+    # A = treatment_policy.get_action(X) # Actions 
+    # U = population.treat(list(range(n_population)), A)
+    # print(treatment_policy.get_utility(features, A, U))
+    
     
     # U = population.treat(list(range(n_population)), A)
     # utility = treatment_policy.get_utility(X, A, U)
+    
+    thetas = [1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
+    utility_list = np.zeros(len(thetas) + 1)
+    utility_list[0] = treatment_policy.get_utility(features, A, U)
+    for i in range(len(thetas)):
+        np.random.seed(57)
+        A_noise = privatize_actions(A, thetas[i])
+        U_noise = population.treat(list(range(n_population)), A_noise)
+        utility_list[i+1] = treatment_policy.get_utility(X, A_noise, U_noise)
+    print(utility_list)

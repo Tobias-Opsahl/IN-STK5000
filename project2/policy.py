@@ -100,6 +100,7 @@ class Policy:
                 if features[t, i] == 0 and outcome[t, i] == 1:
                     utility -= weights[i] * penalty
             rewards[t] = utility 
+    
         # rewards_test = np.zeros(len(outcome))
         # for t in range(len(features)):
         #     utility = 0
