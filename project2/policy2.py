@@ -11,14 +11,16 @@ np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
 class Policy:
     """ A policy for treatment/vaccination. """
-    def __init__(self, n_actions, action_set):
+    def __init__(self, n_actions, action_set, threshold=0.5):
         """ Initialise.
         Args:
         n_actions (int): the number of actions
         action_set (list): the set of actions
+        threshold (float): Threshold for caterogizing from logistic regression
         """
         self.n_actions = n_actions
         self.action_set = action_set
+        self.threshold = threshold
     
     def initialize_data(self, n_population):
         population = simulator.Population(128, 3, 3)
@@ -59,7 +61,7 @@ class Policy:
         # return np.asmatrix(temp1.join(temp2))
         return N
         
-    def get_reward(self, features, actions, outcome, penalty=1.5, threshold=0.5):
+    def get_reward(self, features, actions, outcome, penalty=1.5):
         """
         Out:
             rewards (np.array): Array of rewards, corresponding to the persons
@@ -74,6 +76,7 @@ class Policy:
         """
         rewards = np.zeros(len(outcome))
         weights = [0, 0.2, 0.1, 0.1, 0.1, 0.5, 0.2, 0.5, 1.0, 100.0]
+        threshold = self.threshold
         for t in range(len(features)):
             utility = 0
             for i in range(1, len(weights)): # i loops over the sypmtom indexes
@@ -84,7 +87,6 @@ class Policy:
             if sum(actions[t, :]) > 0: # Some action were used
                 utility = utility - 0.1 # The treatment is not free
             rewards[t] = utility 
-            
         return rewards
         
     ## Observe the features, treatments and outcomes of one or more individuals
@@ -253,7 +255,23 @@ def add_feature_names(X):
     features += ["Vaccination status" + str(i) for i in range(1, 4)]
     features_data.columns = features
     return features_data
+    
+def add_action_names(actions):
+    df = pd.DataFrame(actions)
+    names = ["Treatment" + str(i) for i in range(1, actions.shape[1] + 1)]
+    df.columns = names
+    return df
 
+def add_outcome_names(outcomes):
+    df = pd.DataFrame(outcomes)
+    columns = ["Covid-Recovered", "Covid-Positive", "No-Taste/Smell", "Fever", 
+                  "Headache", "Pneumonia", "Stomach", "Myocarditis", 
+                  "Blood-Clots", "Death"]
+    for i in range(len(columns)):
+        columns[i] = "Post_" + columns[i]
+    df.columns = columns
+    return df
+    
 def privatize_actions(A, theta):
     """
     Adds noise to the actions chosen bu the model. This is currently done
@@ -295,6 +313,38 @@ if __name__ == "__main__":
     U = population.treat(list(range(n_population)), A)
     # print(treatment_policy.get_utility(features, A, U))
     
+    # Fairness test
+    df1 = add_feature_names(X)
+    df2 = add_action_names(A)
+    df3 = add_outcome_names(U)
+    df = df1.join(df2.join(df3))
+    gender = df["Gender"] > df["Gender"].median()
+    income = df["Income"] > df["Income"].median()
+    age = df["Age"] > df["Age"].median()
+    variables = [gender, income, age]
+    treatments = ["Treatment1", "Treatment2", "Treatment3"]
+    p_scores = np.zeros((3, 4)) # Treat1, 2, 3, no_treatment
+    for i in range(len(treatments)): # Treatment 1, 2 and 3
+        treatment = treatments[i]
+        for j in range(len(variables)):
+            variable = variables[j]
+            p_score = df[variable][treatment].mean() / df[~variable][treatment].mean()
+            p_scores[j, i] = p_score
+    for j in range(len(variables)): # No treatment
+        variable = variables[j]
+        group1 = df[variable][(df[variable]["Treatment1"] == 0.0) & 
+                              (df[variable]["Treatment2"] == 0.0) & 
+                              (df[variable]["Treatment3"] == 0.0)]
+        group2 = df[~variable][(df[~variable]["Treatment1"] == 0.0) & 
+                               (df[~variable]["Treatment2"] == 0.0) & 
+                               (df[~variable]["Treatment3"] == 0.0)]
+        p_score = len(group1) / len(group2)
+        p_scores[j, 3] = p_score
+        
+    print(p_scores) # Age is the least equal one
+    
+    
+    # Model test
     # treatment_policy.observe(features, actions, outcomes)
     # A = treatment_policy.get_action(X) # Actions 
     # U = population.treat(list(range(n_population)), A)
@@ -304,17 +354,17 @@ if __name__ == "__main__":
     # A = treatment_policy.get_action(X) # Actions 
     # U = population.treat(list(range(n_population)), A)
     # print(treatment_policy.get_utility(features, A, U))
-    
-    
+    #
     # U = population.treat(list(range(n_population)), A)
     # utility = treatment_policy.get_utility(X, A, U)
     
-    thetas = [1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
-    utility_list = np.zeros(len(thetas) + 1)
-    utility_list[0] = treatment_policy.get_utility(features, A, U)
-    for i in range(len(thetas)):
-        np.random.seed(57)
-        A_noise = privatize_actions(A, thetas[i])
-        U_noise = population.treat(list(range(n_population)), A_noise)
-        utility_list[i+1] = treatment_policy.get_utility(X, A_noise, U_noise)
-    print(utility_list)
+    # Privacy test
+    # thetas = [1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
+    # utility_list = np.zeros(len(thetas) + 1)
+    # utility_list[0] = treatment_policy.get_utility(features, A, U)
+    # for i in range(len(thetas)):
+    #     np.random.seed(57)
+    #     A_noise = privatize_actions(A, thetas[i])
+    #     U_noise = population.treat(list(range(n_population)), A_noise)
+    #     utility_list[i+1] = treatment_policy.get_utility(X, A_noise, U_noise)
+    # print(utility_list)

@@ -280,15 +280,18 @@ def add_feature_names(X):
     
 def add_action_names(actions):
     df = pd.DataFrame(actions)
-    names = ["Action" + str(i) for i in range(1, len(actions.shape[0]) + 1)]
+    names = ["Treatment" + str(i) for i in range(1, actions.shape[1] + 1)]
     df.columns = names
     return df
 
 def add_outcome_names(outcomes):
     df = pd.DataFrame(outcomes)
-    df.columns = ["Covid-Recovered", "Covid-Positive", "No-Taste/Smell", "Fever", 
+    columns = ["Covid-Recovered", "Covid-Positive", "No-Taste/Smell", "Fever", 
                   "Headache", "Pneumonia", "Stomach", "Myocarditis", 
                   "Blood-Clots", "Death"]
+    for i in range(len(columns)):
+        columns[i] = "Post_" + columns[i]
+    df.columns = columns
     return df
     
 def privatize(X, theta):
@@ -363,9 +366,39 @@ if __name__ == "__main__":
     treatment_policy = Policy(n_treatments, list(range(n_treatments)))
     np.random.seed(57)
     A = treatment_policy.get_action(X) # Actions 
-    embed()
     U = population.treat(list(range(n_population)), A)
     utility = treatment_policy.get_utility(X, A, U)
+    
+    # Fairness test
+    df1 = add_feature_names(X)
+    df2 = add_action_names(A)
+    df3 = add_outcome_names(U)
+    df = df1.join(df2.join(df3))
+    gender = df["Gender"] > df["Gender"].median()
+    income = df["Income"] > df["Income"].median()
+    age = df["Age"] > df["Age"].median()
+    variables = [gender, income, age]
+    treatments = ["Treatment1", "Treatment2", "Treatment3"]
+    p_scores = np.zeros((3, 3)) # Treat1, 2, 3
+    for i in range(len(treatments)): # Treatment 1, 2 and 3
+        treatment = treatments[i]
+        for j in range(len(variables)):
+            variable = variables[j]
+            p_score = df[variable][treatment].mean() / df[~variable][treatment].mean()
+            p_scores[j, i] = p_score
+    # for j in range(len(variables)): # No treatment
+    #     variable = variables[j]
+    #     group1 = df[variable][(df[variable]["Treatment1"] == 0.0) & 
+    #                           (df[variable]["Treatment2"] == 0.0) & 
+    #                           (df[variable]["Treatment3"] == 0.0)]
+    #     group2 = df[~variable][(df[~variable]["Treatment1"] == 0.0) & 
+    #                            (df[~variable]["Treatment2"] == 0.0) & 
+    #                            (df[~variable]["Treatment3"] == 0.0)]
+    #     p_score = len(group1) / len(group2)
+    #     p_scores[j, 3] = p_score
+        
+    print(p_scores) # Age is the least equal one
+    embed()
     
     # embed()
     # utility_list = np.zeros(len(thetas)+1)
