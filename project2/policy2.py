@@ -336,25 +336,67 @@ def add_outcome_names(outcomes):
     df.columns = columns
     return df
     
-def privatize_actions(A, theta):
+def privatize_actions_shuffle(A, theta):
     """
     Adds noise to the actions chosen by the model. This is done by shuffling 
     the actions given to each person, with a probability 1 - theta. 
     """
     A1 = A.copy()
-    for i in range(A1.shape[1]):
-        A1[:, i] = randomize(A1[:, i], theta)
+    coins = np.random.choice([True, False], p=(theta, (1-theta)), size=A.shape[0])
+    for i in range(A1.shape[0]):
+        if not coins[i]:
+            np.random.shuffle(A1[i, :])
+    return A1
+
+def privatize_actions_draw(A, theta):
+    """
+    Adds noise to the actions chosen by the model. This is done by choicing a 
+    new action with a probability 1-theta.
+    """
+    A1 = A.copy()
+    coins = np.random.choice([True, False], p=(theta, (1-theta)), size=A.shape[0])
+    for i in range(A1.shape[0]):
+        if not coins[i]:
+            A1[i, :] = np.zeros(A.shape[1])
+            coin = np.random.randint(A.shape[1]+1)
+            if coin != A.shape[1]:
+                A1[i, coin] = 1
     return A1
     
 def randomize(a, theta):
     """
     Randomize a single column. Simply add a coin-toss to 1- theta amount of the data
     """
-    coins = np.random.choice([True, False], p=(theta, (1-theta)), size=a.shape)
-    noise = np.random.choice([0, 1], size=a.shape)
+    coins = np.random.choice([True, False], p=(theta, (1-theta)), size=a.size)
+    noise = np.random.choice([0, 1], size=a.size)
     response = np.array(a)
     response[~coins] = noise[~coins]
     return response 
+    
+def randomize_cont(a, theta, decay=1):
+    coins = np.random.choice([True, False], p=(theta, (1-theta)), size=a.size)
+    noise = np.random.laplace(0, decay, a.size)
+    response = np.array(a)
+    response[~coins] = response[~coins] + noise[~coins]
+    return response
+    
+def privatize(X, theta):
+    """
+    Adds noice to the data, column by column. The continious and discreet 
+    columns are treated differently. 
+    """
+    df = add_feature_names(X).copy()
+    df["Age"] = randomize_cont(df["Age"], theta)
+    df["Income"] = randomize_cont(df["Income"], theta)
+    columns = ["Gender", "Asthma", "Obesity", "Smoking", 
+               "Diabetes", "Heart disease", "Hypertension"]
+    for column in columns:
+        df[column] = randomize(df[column], theta)
+    symptoms = ["Covid-Recovered", "Covid-Positive", "No-Taste/Smell", "Fever", 
+                "Headache", "Pneumonia", "Stomach", "Myocarditis", "Blood-Clots", "Death"]
+    for columns in symptoms: # Shuffle symptoms
+        df[column] = randomize(df[column], theta)
+    return np.asarray(df)
     
 def treatments_given(actions):
     """
@@ -374,7 +416,7 @@ if __name__ == "__main__":
     n_genes = 128
     n_vaccines = 3
     n_treatments = 3
-    n_population = 877
+    n_population = 30000
     population = simulator.Population(n_genes, n_vaccines, n_treatments)
     np.random.seed(57)
     X = population.generate(n_population) # Population
@@ -388,14 +430,13 @@ if __name__ == "__main__":
     A = treatment_policy.get_action(X) # Actions 
     U = population.treat(list(range(n_population)), A)
     # print(treatment_policy.get_utility(features, A, U))
-    
-    
+
+    # embed()
     # Historical data
-    features = init_features("treatment_features.csv")
-    actions = init_actions()
-    observations = init_outcomes()
+    # features = init_features("treatment_features.csv")
+    # actions = init_actions()
+    # observations = init_outcomes()
     # treatment_policy.get_utility(np.asmatrix(features), np.asmatrix(actions), np.asmatrix(observations))
-    embed()
     
     # Fairness test
     # df1 = add_feature_names(X)
@@ -443,12 +484,29 @@ if __name__ == "__main__":
     # utility = treatment_policy.get_utility(X, A, U)
     
     # Privacy test
-    # thetas = [1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
-    # utility_list = np.zeros(len(thetas) + 1)
-    # utility_list[0] = treatment_policy.get_utility(features, A, U)
-    # for i in range(len(thetas)):
-    #     np.random.seed(57)
-    #     A_noise = privatize_actions(A, thetas[i])
-    #     U_noise = population.treat(list(range(n_population)), A_noise)
-    #     utility_list[i+1] = treatment_policy.get_utility(X, A_noise, U_noise)
-    # print(utility_list)
+    thetas = [1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
+    utility_list1 = np.zeros(len(thetas) + 1)
+    utility_list2 = np.zeros(len(thetas) + 1)
+    utility_list3 = np.zeros(len(thetas) + 1)
+    utility_list1[0] = treatment_policy.get_utility(X, A, U)
+    utility_list2[0] = treatment_policy.get_utility(X, A, U)
+    utility_list3[0] = treatment_policy.get_utility(X, A, U)
+    for i in range(len(thetas)):
+        np.random.seed(57)
+        X_noise = privatize(X, thetas[i])
+        A_noise1 = treatment_policy.get_action(X_noise)
+        A_noise2 = privatize_actions_shuffle(A, thetas[i])
+        A_noise3 = privatize_actions_draw(A, thetas[i])
+        
+        U1 = population.treat(list(range(n_population)), A_noise1)
+        U2 = population.treat(list(range(n_population)), A_noise2)
+        U3 = population.treat(list(range(n_population)), A_noise3)
+
+        utility_list1[i+1] = treatment_policy.get_utility(X, A_noise1, U1)
+        utility_list2[i+1] = treatment_policy.get_utility(X, A_noise2, U2)
+        utility_list3[i+1] = treatment_policy.get_utility(X, A_noise3, U3)
+
+    print(utility_list1)
+    print(utility_list2)
+    print(utility_list3)
+    embed()
