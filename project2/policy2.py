@@ -3,11 +3,11 @@ import pandas as pd
 from aux_file import symptom_names
 import simulator
 from IPython import embed
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.linear_model import LogisticRegression
 from sklearn import preprocessing
-from read_functions import *
-
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+
+from read_functions import *
 
 class ZeroModel:
     """
