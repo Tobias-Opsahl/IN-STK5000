@@ -251,12 +251,15 @@ class Policy:
             # If at least one expected reward is bigger than 0, we chose the biggest
             elif rewards1[t] >= rewards2[t] and rewards1[t] >= rewards3[t]:
                 actions[t, 0] = 1
+                expected_utility += rewards1[t]
             elif rewards2[t] >= rewards1[t] and rewards2[t] >= rewards3[t]:
                 actions[t, 1] = 1
                 expected_utility += rewards2[t]
             elif rewards3[t] >= rewards1[t] and rewards3[t] >= rewards2[t]:
                 actions[t, 2] = 1
+                expected_utility += rewards3[t]
         # embed()
+        self.expected_utility = expected_utility
         return actions
     
     def get_arguments(self):
@@ -415,12 +418,77 @@ def treatments_given(actions):
             s += 1
     return s
     
+def equal_opportunity_scores(features, actions, outcomes, model_list):
+    """
+    Returns the equal opportunity scores. This is defined by the probability
+    of predicting that an individual will not be sick. The models should be
+    fitted in advance, with observe(). Note that we care about _not_ being sick,
+    because this is closely related to actually being treated. 
+    
+    This return two two-dimensonal array for each of the sensitive 
+    variables. The two arrays responds to group 1 and group 2 of the
+    sensitive variables (for example over median income and under). The
+    arrays are shape 3 x 9. The three rows corresponds to the treatments.
+    The 9 columns corresponds to the 9 symptoms. For every time a person 
+    with an action i does not have a symptom j and the models predict 
+    they will not have the symptom j, the corresponding array gets += 1 in
+    the [i, j]th place. The equal opportunity scores are then obtained by
+    dividing the arrays. One can also sum the rows or columns if one does
+    not care about the individual treatments or symptoms, respectivly, 
+    before dividing.
+    """
+    df = add_feature_names(features) # for easy calculation and debugging
+    treatments = ["Treatment1", "Treatment2", "Treatment3"]
+    symptom_indices = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    treat1_indices = actions[:, 0] == 1 # Have gotten treatment1
+    treat2_indices = actions[:, 1] == 1 # Have gotten treatment2
+    treat3_indices = actions[:, 2] == 1 # Have gotten treatment3
+    indices_list = [treat1_indices, treat2_indices, treat3_indices]
+    # model_list = [self.models1, self.models2, self.models3]
+    
+    equal_scores_g1 = np.zeros((3, 9)) # gender = 1
+    equal_scores_g2 = np.zeros((3, 9)) # gender = 0
+    equal_scores_i1 = np.zeros((3, 9)) # income >= income.median()
+    equal_scores_i2 = np.zeros((3, 9)) # income < income.median()
+    equal_scores_a1 = np.zeros((3, 9)) # age >= age.median()
+    equal_scores_a2 = np.zeros((3, 9)) # age < age.median()
+    for i in range(3): # Loop over the treatments and corresponding models
+        indicies = indices_list[i]
+        data = features[indicies]
+        out = outcomes[indicies]
+        models = model_list[i]
+        for j in symptom_indices: # Loop over symptoms (j is 1 over range(9))
+            # feature select:
+            x_data = data[:, [j, 10, 11, 12, 141, 142, 143, 144, 143, 144, 145, 146]]
+            scaler = preprocessing.StandardScaler().fit(x_data)
+            x_scaled = scaler.transform(x_data)
+            pred = models[j-1].predict_proba(x_scaled)[:, 1] # Predict
+            pred_positives = pred < 0.5 # We predict: No symptom
+            out_positives = out[:, j] == 0 # The truth is: No symptom
+            for t in range(len(pred)):
+                if pred_positives[t] and out_positives[t]:
+                    if data[t, 10] >= df["Age"].median():
+                        equal_scores_a1[i, j-1] += 1 
+                    else:
+                        equal_scores_a2[i, j-1] += 1
+                    if data[t, 12] >= df["Income"].median():
+                        equal_scores_i1[i, j-1] += 1 
+                    else:
+                        equal_scores_i2[i, j-1] += 1
+                    if data[t, 11] == 1:
+                        equal_scores_g1[i, j-1] += 1 
+                    else:
+                        equal_scores_g2[i, j-1] += 1           
+    # embed()
+    return equal_scores_a1, equal_scores_a2, equal_scores_g1, \
+           equal_scores_g2, equal_scores_i1, equal_scores_i2
+    
 if __name__ == "__main__":
     np.random.seed(57)
     n_genes = 128
     n_vaccines = 3
     n_treatments = 3
-    n_population = 30000
+    n_population = 10000
     population = simulator.Population(n_genes, n_vaccines, n_treatments)
     np.random.seed(57)
     X = population.generate(n_population) # Population
@@ -442,6 +510,7 @@ if __name__ == "__main__":
     observations = init_outcomes()
     treatment_policy.get_utility(np.asmatrix(features), np.asmatrix(actions), np.asmatrix(observations))
     # treatment_policy.get
+    
     # Fairness test
     # df1 = add_feature_names(X)
     # df2 = add_action_names(A)
@@ -471,8 +540,9 @@ if __name__ == "__main__":
     #     p_scores[j, 3] = p_score
     # 
     # print(p_scores) # Age is the least equal one
-    
-    
+    models = [treatment_policy.models1, treatment_policy.models2, treatment_policy.models3]
+    a1, a2, g1, g2, i1, i2 = equal_opportunity_scores(X, A, U, models)
+    embed()
     # Model test
     # treatment_policy.observe(features, actions, outcomes)
     # A = treatment_policy.get_action(X) # Actions 
