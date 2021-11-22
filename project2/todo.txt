@@ -1,24 +1,21 @@
 
 # Todo
 1.
-Spesifisere utility - greit
+Utype privacy-teori delen.
 
-Regne ut epsilon - vanskelig
+Se over hvorfor privatisering av X gir en A og U som gir høy utility.
 
-Legge til Laplace istedenfor å trekke på nytt - lett
+Hvordan regner vi ut utility for privatized data, priv_X og priv_A, priv_X og A, X og priv_A?
 
-Finne ut hvordan man kan iterativt oppdatere policy - vanskelig
+Skal vi privatisere symtpoms?
 2.
 
-Identifisere sensitive data - lett
-er det bias i dataen allerede - greit
-Analyser dataen med histogrammer - greit
+Rekommentere histogrammene og forklaringene.
 
-
-- For balance (or calibration), measure the total variation of the action (or outcome) 
-    distribution for different outcomes (or actions) when the sensitive variable varies.
-
-Finne ut hvordan man kan bruke gradiant descent - vansklig
+Fikse terminilogien, og prøve equal opportinity score. 
 
 3.
-Vente på historical data
+
+Error bounds on expected utility on historical data?
+
+Estimate of historical policy.

@@ -234,12 +234,15 @@ class Policy:
             post_symptoms2[:, symptom_index-1] = pred2
             post_symptoms3[:, symptom_index-1] = pred3
         
-        mock_actions = np.ones((self.n_population, 3)) # Represent an actions has been done
+        n_population = len(features)
+        # print(n_population)
+        mock_actions = np.ones((n_population, 3)) # Represent an actions has been done
         rewards1 = self.get_reward(features, mock_actions, post_symptoms1)
         rewards2 = self.get_reward(features, mock_actions, post_symptoms2)
         rewards3 = self.get_reward(features, mock_actions, post_symptoms3)
         
         actions = np.zeros([n_population, self.n_actions]) # Initialize
+        expected_utility = 0
         for t in range(n_population):
             # print(f"1: {pred1[t]} 2: {pred2[t]} 3: {pred3[t]}")
             if np.max(np.asarray([rewards1[t], rewards2[t], rewards3[t]])) < 0:
@@ -250,6 +253,7 @@ class Policy:
                 actions[t, 0] = 1
             elif rewards2[t] >= rewards1[t] and rewards2[t] >= rewards3[t]:
                 actions[t, 1] = 1
+                expected_utility += rewards2[t]
             elif rewards3[t] >= rewards1[t] and rewards3[t] >= rewards2[t]:
                 actions[t, 2] = 1
         # embed()
@@ -433,11 +437,11 @@ if __name__ == "__main__":
 
     # embed()
     # Historical data
-    # features = init_features("treatment_features.csv")
-    # actions = init_actions()
-    # observations = init_outcomes()
-    # treatment_policy.get_utility(np.asmatrix(features), np.asmatrix(actions), np.asmatrix(observations))
-    
+    features = init_features("treatment_features.csv")
+    actions = init_actions()
+    observations = init_outcomes()
+    treatment_policy.get_utility(np.asmatrix(features), np.asmatrix(actions), np.asmatrix(observations))
+    # treatment_policy.get
     # Fairness test
     # df1 = add_feature_names(X)
     # df2 = add_action_names(A)
@@ -484,29 +488,29 @@ if __name__ == "__main__":
     # utility = treatment_policy.get_utility(X, A, U)
     
     # Privacy test
-    thetas = [1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
-    utility_list1 = np.zeros(len(thetas) + 1)
-    utility_list2 = np.zeros(len(thetas) + 1)
-    utility_list3 = np.zeros(len(thetas) + 1)
-    utility_list1[0] = treatment_policy.get_utility(X, A, U)
-    utility_list2[0] = treatment_policy.get_utility(X, A, U)
-    utility_list3[0] = treatment_policy.get_utility(X, A, U)
-    for i in range(len(thetas)):
-        np.random.seed(57)
-        X_noise = privatize(X, thetas[i])
-        A_noise1 = treatment_policy.get_action(X_noise)
-        A_noise2 = privatize_actions_shuffle(A, thetas[i])
-        A_noise3 = privatize_actions_draw(A, thetas[i])
-        
-        U1 = population.treat(list(range(n_population)), A_noise1)
-        U2 = population.treat(list(range(n_population)), A_noise2)
-        U3 = population.treat(list(range(n_population)), A_noise3)
-
-        utility_list1[i+1] = treatment_policy.get_utility(X, A_noise1, U1)
-        utility_list2[i+1] = treatment_policy.get_utility(X, A_noise2, U2)
-        utility_list3[i+1] = treatment_policy.get_utility(X, A_noise3, U3)
-
-    print(utility_list1)
-    print(utility_list2)
-    print(utility_list3)
-    embed()
+    # thetas = [1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
+    # utility_list1 = np.zeros(len(thetas) + 1)
+    # utility_list2 = np.zeros(len(thetas) + 1)
+    # utility_list3 = np.zeros(len(thetas) + 1)
+    # utility_list1[0] = treatment_policy.get_utility(X, A, U)
+    # utility_list2[0] = treatment_policy.get_utility(X, A, U)
+    # utility_list3[0] = treatment_policy.get_utility(X, A, U)
+    # for i in range(len(thetas)):
+    #     np.random.seed(57)
+    #     X_noise = privatize(X, thetas[i])
+    #     A_noise1 = treatment_policy.get_action(X_noise)
+    #     A_noise2 = privatize_actions_shuffle(A, thetas[i])
+    #     A_noise3 = privatize_actions_draw(A, thetas[i])
+    # 
+    #     U1 = population.treat(list(range(n_population)), A_noise1)
+    #     U2 = population.treat(list(range(n_population)), A_noise2)
+    #     U3 = population.treat(list(range(n_population)), A_noise3)
+    # 
+    #     utility_list1[i+1] = treatment_policy.get_utility(X, A_noise1, U1)
+    #     utility_list2[i+1] = treatment_policy.get_utility(X, A_noise2, U2)
+    #     utility_list3[i+1] = treatment_policy.get_utility(X, A_noise3, U3)
+    # 
+    # print(utility_list1)
+    # print(utility_list2)
+    # print(utility_list3)
+    # embed()
